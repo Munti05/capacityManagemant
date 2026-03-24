@@ -1,0 +1,128 @@
+import { useState } from 'react';
+import { useData } from '@/contexts/DataContext';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Search, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Skill } from '@/data/mockData';
+
+const CATEGORIES = ['Frontend', 'Backend', 'Database', 'DevOps', 'Design'];
+
+export default function SkillsManagementPage() {
+  const { skills, addSkill, deleteSkill, updateSkill } = useData();
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [showAdd, setShowAdd] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [newSkill, setNewSkill] = useState({ name: '', category: 'Frontend', description: '' });
+  const [editForm, setEditForm] = useState<Skill>({ id: '', name: '', category: '', description: '' });
+
+  let filtered = skills;
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(s => s.name.toLowerCase().includes(q) || s.category.toLowerCase().includes(q));
+  }
+  if (categoryFilter !== 'all') {
+    filtered = filtered.filter(s => s.category === categoryFilter);
+  }
+
+  const handleAdd = () => {
+    if (!newSkill.name) return;
+    addSkill(newSkill);
+    setNewSkill({ name: '', category: 'Frontend', description: '' });
+    setShowAdd(false);
+  };
+
+  const startEdit = (skill: Skill) => {
+    setEditingId(skill.id);
+    setEditForm({ ...skill });
+  };
+
+  const saveEdit = () => {
+    updateSkill(editForm);
+    setEditingId(null);
+  };
+
+  return (
+    <div>
+      {/* Filters */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search skills..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-card border-border h-9" />
+        </div>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-36 h-9 bg-card text-xs">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Button size="sm" onClick={() => setShowAdd(!showAdd)} className="h-9">
+          <Plus className="w-4 h-4 mr-1" /> Add Skill
+        </Button>
+      </div>
+
+      {/* Add form */}
+      {showAdd && (
+        <div className="bg-card border border-border rounded-lg p-4 mb-4 animate-fade-in">
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <Label className="text-xs text-muted-foreground">Name</Label>
+              <Input value={newSkill.name} onChange={e => setNewSkill(p => ({ ...p, name: e.target.value }))} className="bg-background h-8" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Category</Label>
+              <select value={newSkill.category} onChange={e => setNewSkill(p => ({ ...p, category: e.target.value }))} className="w-full h-8 px-2 rounded-md border border-border bg-background text-sm text-foreground">
+                {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Description</Label>
+              <Input value={newSkill.description} onChange={e => setNewSkill(p => ({ ...p, description: e.target.value }))} className="bg-background h-8" />
+            </div>
+          </div>
+          <div className="flex gap-2 mt-3">
+            <Button size="sm" onClick={handleAdd}>Add</Button>
+            <Button size="sm" variant="outline" onClick={() => setShowAdd(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Skills list */}
+      <div className="space-y-1">
+        {filtered.map(skill => (
+          <div key={skill.id} className="flex items-center gap-3 px-4 py-2.5 bg-card border border-border rounded-md hover:border-primary/30 transition-colors">
+            {editingId === skill.id ? (
+              <>
+                <Input value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} className="bg-background h-7 text-sm flex-1" />
+                <select value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))} className="h-7 px-2 rounded border border-border bg-background text-xs text-foreground">
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <Input value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} className="bg-background h-7 text-sm flex-1" />
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={saveEdit}><Check className="w-3.5 h-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => setEditingId(null)}><X className="w-3.5 h-3.5" /></Button>
+              </>
+            ) : (
+              <>
+                <span className="text-sm font-medium text-foreground flex-1">{skill.name}</span>
+                <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded">{skill.category}</span>
+                <span className="text-xs text-muted-foreground flex-1">{skill.description}</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(skill)}><Pencil className="w-3.5 h-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSkill(skill.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground text-sm">No skills found</div>
+      )}
+    </div>
+  );
+}
