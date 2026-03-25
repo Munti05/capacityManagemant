@@ -16,10 +16,11 @@ export default function NewProjectPage() {
     shortName: '',
     name: '',
     description: '',
+    client: '',
     startDate: '',
     endDate: '',
     overallCapacity: '',
-    pmId: '',
+    pmIds: [] as string[],
     estimatedCost: '',
     estimatedRevenue: '',
   });
@@ -28,25 +29,20 @@ export default function NewProjectPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.shortName.length !== 3) {
-      setError('Short name must be exactly 3 letters');
-      return;
-    }
-    if (!form.name || !form.startDate || !form.endDate) {
-      setError('Please fill in all required fields');
-      return;
-    }
+    if (form.shortName.length !== 3) { setError('Short name must be exactly 3 letters'); return; }
+    if (!form.name || !form.startDate || !form.endDate) { setError('Please fill in all required fields'); return; }
+    if (!form.client) { setError('Client field is required'); return; }
 
-    const pm = EMPLOYEES.find(emp => emp.id === form.pmId);
+    const pmNames = form.pmIds.map(id => EMPLOYEES.find(e => e.id === id)?.name).filter(Boolean) as string[];
 
     addProject({
       shortName: form.shortName.toUpperCase(),
       name: form.name,
       description: form.description,
       status: 'Planned',
-      client: '',
-      pmIds: form.pmId ? [form.pmId] : [],
-      pmNames: pm ? [pm.name] : [],
+      client: form.client,
+      pmIds: form.pmIds,
+      pmNames,
       startDate: form.startDate,
       endDate: form.endDate,
       overallCapacity: Number(form.overallCapacity) || 0,
@@ -58,6 +54,13 @@ export default function NewProjectPage() {
   };
 
   const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const togglePm = (id: string) => {
+    setForm(prev => ({
+      ...prev,
+      pmIds: prev.pmIds.includes(id) ? prev.pmIds.filter(p => p !== id) : [...prev.pmIds, id],
+    }));
+  };
 
   return (
     <div className="p-6 max-w-2xl mx-auto">
@@ -77,6 +80,11 @@ export default function NewProjectPage() {
             <Label className="text-xs text-muted-foreground">Name *</Label>
             <Input value={form.name} onChange={e => update('name', e.target.value)} className="bg-background" />
           </div>
+        </div>
+
+        <div>
+          <Label className="text-xs text-muted-foreground">Client *</Label>
+          <Input value={form.client} onChange={e => update('client', e.target.value)} className="bg-background" />
         </div>
 
         <div>
@@ -101,15 +109,21 @@ export default function NewProjectPage() {
             <Input type="number" value={form.overallCapacity} onChange={e => update('overallCapacity', e.target.value)} className="bg-background" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Assign PM</Label>
-            <select
-              value={form.pmId}
-              onChange={e => update('pmId', e.target.value)}
-              className="w-full h-10 px-3 rounded-md border border-border bg-background text-sm text-foreground"
-            >
-              <option value="">Select PM</option>
-              {EMPLOYEES.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
-            </select>
+            <Label className="text-xs text-muted-foreground">Assign PM(s) — select multiple</Label>
+            <div className="space-y-1 mt-1 max-h-32 overflow-auto border border-border rounded-md p-2 bg-background">
+              {EMPLOYEES.map(emp => (
+                <label key={emp.id} className="flex items-center gap-2 text-sm text-foreground cursor-pointer hover:bg-accent rounded px-1 py-0.5">
+                  <input
+                    type="checkbox"
+                    checked={form.pmIds.includes(emp.id)}
+                    onChange={() => togglePm(emp.id)}
+                    className="rounded border-border"
+                  />
+                  {emp.name}
+                  <span className="text-xs text-muted-foreground ml-auto">{emp.jobTitle}</span>
+                </label>
+              ))}
+            </div>
           </div>
         </div>
 
