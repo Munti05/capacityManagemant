@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { ProjectCard } from '@/components/ProjectCard';
+import { ProjectFilter, FilterRow, applyFilters } from '@/components/ProjectFilter';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -12,18 +13,25 @@ import { ProjectStatus } from '@/data/mockData';
 type SortColumn = 'shortName' | 'name' | 'status' | 'startDate' | 'progress' | 'endDate' | 'overallCapacity';
 type SortDir = 'asc' | 'desc';
 
+function defaultSort(a: { status: string; endDate: string }, b: { status: string; endDate: string }) {
+  const order: Record<string, number> = { Ongoing: 0, Planned: 1, Finished: 2, Canceled: 3 };
+  const oa = order[a.status] ?? 9;
+  const ob = order[b.status] ?? 9;
+  if (oa !== ob) return oa - ob;
+  return a.endDate.localeCompare(b.endDate);
+}
+
 export default function ProjectsPage() {
   const { isManager, isPM } = useAuth();
   const { projects } = useData();
   const navigate = useNavigate();
 
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [sortCol, setSortCol] = useState<SortColumn>('name');
+  const [sortCol, setSortCol] = useState<SortColumn | 'default'>('default');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
   const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<FilterRow[]>([]);
 
-  // Filter projects
   let filtered = isPM
     ? projects.filter(p => p.pmNames.includes('Project Manager'))
     : projects;
@@ -37,22 +45,25 @@ export default function ProjectsPage() {
     );
   }
 
-  if (statusFilter !== 'all') {
-    filtered = filtered.filter(p => p.status === statusFilter);
+  if (filters.length > 0) {
+    filtered = applyFilters(filtered, filters);
   }
 
-  // Sort
-  filtered = [...filtered].sort((a, b) => {
-    let cmp = 0;
-    const av = a[sortCol];
-    const bv = b[sortCol];
-    if (typeof av === 'string' && typeof bv === 'string') cmp = av.localeCompare(bv);
-    else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
-    return sortDir === 'asc' ? cmp : -cmp;
-  });
+  if (sortCol === 'default') {
+    filtered = [...filtered].sort(defaultSort);
+  } else {
+    filtered = [...filtered].sort((a, b) => {
+      let cmp = 0;
+      const av = a[sortCol];
+      const bv = b[sortCol];
+      if (typeof av === 'string' && typeof bv === 'string') cmp = av.localeCompare(bv);
+      else if (typeof av === 'number' && typeof bv === 'number') cmp = av - bv;
+      return sortDir === 'asc' ? cmp : -cmp;
+    });
+  }
 
-  const statuses: ProjectStatus[] = ['Planned', 'Ongoing', 'Canceled', 'Finished'];
-  const sortColumns: { value: SortColumn; label: string }[] = [
+  const sortColumns: { value: string; label: string }[] = [
+    { value: 'default', label: 'Default' },
     { value: 'shortName', label: 'Short Name' },
     { value: 'name', label: 'Name' },
     { value: 'status', label: 'Status' },
@@ -76,7 +87,6 @@ export default function ProjectsPage() {
         )}
       </div>
 
-      {/* Filters bar */}
       <div className="flex items-center gap-2 mb-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -88,11 +98,11 @@ export default function ProjectsPage() {
           />
         </div>
 
-        <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="h-9">
-          <Filter className="w-4 h-4 mr-1" /> Filter
+        <Button variant={showFilters ? 'default' : 'outline'} size="sm" onClick={() => setShowFilters(!showFilters)} className="h-9">
+          <Filter className="w-4 h-4 mr-1" /> Filter {filters.length > 0 && `(${filters.length})`}
         </Button>
 
-        <Select value={sortCol} onValueChange={v => setSortCol(v as SortColumn)}>
+        <Select value={sortCol} onValueChange={v => setSortCol(v as SortColumn | 'default')}>
           <SelectTrigger className="w-36 h-9 bg-card text-xs">
             <ArrowUpDown className="w-3 h-3 mr-1" />
             <SelectValue />
@@ -102,31 +112,19 @@ export default function ProjectsPage() {
           </SelectContent>
         </Select>
 
-        <Button variant="outline" size="sm" className="h-9 px-2" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
-          {sortDir === 'asc' ? '↑' : '↓'}
-        </Button>
+        {sortCol !== 'default' && (
+          <Button variant="outline" size="sm" className="h-9 px-2" onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}>
+            {sortDir === 'asc' ? '↑' : '↓'}
+          </Button>
+        )}
       </div>
 
       {showFilters && (
-        <div className="flex items-center gap-2 mb-4 p-3 bg-card border border-border rounded-lg animate-fade-in">
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-36 h-8 text-xs bg-background">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-            </SelectContent>
-          </Select>
-          {statusFilter !== 'all' && (
-            <Button variant="ghost" size="sm" onClick={() => setStatusFilter('all')} className="h-8 text-xs text-muted-foreground">
-              <X className="w-3 h-3 mr-1" /> Clear
-            </Button>
-          )}
+        <div className="mb-4">
+          <ProjectFilter filters={filters} onChange={setFilters} hidePM={isPM} />
         </div>
       )}
 
-      {/* Project list */}
       <div className="space-y-2">
         {filtered.map(project => (
           <ProjectCard key={project.id} project={project} />

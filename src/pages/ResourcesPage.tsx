@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useData } from '@/contexts/DataContext';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Star } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const CATEGORIES = ['Frontend', 'Backend', 'Database', 'DevOps', 'Design'];
+const LEVELS = [1, 2, 3];
 
 export default function ResourcesPage() {
   const { employees, skills } = useData();
@@ -25,6 +26,7 @@ export default function ResourcesPage() {
     const q = search.toLowerCase();
     filtered = filtered.filter(e =>
       e.name.toLowerCase().includes(q) ||
+      e.jobTitle.toLowerCase().includes(q) ||
       e.skills.some(s => s.skillName.toLowerCase().includes(q))
     );
   }
@@ -44,7 +46,6 @@ export default function ResourcesPage() {
 
   return (
     <div>
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-2 mb-6">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -73,23 +74,27 @@ export default function ResourcesPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="0">Any Level</SelectItem>
-            {[1, 2, 3, 4, 5].map(l => <SelectItem key={l} value={String(l)}>Level {l}+</SelectItem>)}
+            {LEVELS.map(l => <SelectItem key={l} value={String(l)}>Level {l}+</SelectItem>)}
           </SelectContent>
         </Select>
       </div>
 
-      {/* Cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(emp => (
           <div key={emp.id} className="bg-card border border-border rounded-lg p-4 hover:border-primary/30 transition-colors">
-            <h3 className="text-sm font-semibold text-foreground mb-3">{emp.name}</h3>
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground">{emp.name}</h3>
+                <p className="text-xs text-muted-foreground">{emp.jobTitle}</p>
+              </div>
+            </div>
             <div className="space-y-1.5 mb-3">
               {emp.skills.map(skill => (
                 <div key={skill.skillId} className="flex items-center justify-between">
                   <span className="text-xs text-muted-foreground">{skill.skillName}</span>
                   <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={`w-3 h-3 ${i < skill.level ? 'text-primary fill-primary' : 'text-muted'}`} />
+                    {LEVELS.map(i => (
+                      <div key={i} className={`w-5 h-1.5 rounded-full ${i <= skill.level ? 'bg-primary' : 'bg-muted'}`} />
                     ))}
                   </div>
                 </div>
