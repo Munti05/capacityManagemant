@@ -12,7 +12,7 @@ export default function ResourcesPage() {
   const { employees, skills } = useData();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
-  const [minLevel, setMinLevel] = useState<string>('0');
+  const [minLevel, setMinLevel] = useState<string>('1');
 
   const toggleCategory = (cat: string) => {
     setCategoryFilter(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -24,24 +24,24 @@ export default function ResourcesPage() {
 
   if (search) {
     const q = search.toLowerCase();
-    filtered = filtered.filter(e =>
-      e.name.toLowerCase().includes(q) ||
-      e.jobTitle.toLowerCase().includes(q) ||
-      e.skills.some(s => s.skillName.toLowerCase().includes(q))
-    );
+    filtered = filtered.filter(e => {
+      const nameMatch = e.name.toLowerCase().startsWith(q);
+      const skillMatch = e.skills.some(s => s.skillName.toLowerCase().startsWith(q));
+      return nameMatch || skillMatch;
+    });
   }
 
   if (categoryFilter.length > 0) {
+    const ml = Number(minLevel);
     filtered = filtered.filter(e =>
       categoryFilter.every(cat =>
-        e.skills.some(s => getSkillCategory(s.skillId) === cat)
+        e.skills.some(s => {
+          if (getSkillCategory(s.skillId) !== cat) return false;
+          if (ml === 3) return s.level === 3;
+          return s.level >= ml;
+        })
       )
     );
-  }
-
-  const ml = Number(minLevel);
-  if (ml > 0) {
-    filtered = filtered.filter(e => e.skills.some(s => s.level >= ml));
   }
 
   return (
@@ -49,7 +49,7 @@ export default function ResourcesPage() {
       <div className="flex flex-wrap items-center gap-2 mb-6">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search employees or skills..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-card border-border h-9" />
+          <Input placeholder="Search by name or skill..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 bg-card border-border h-9" />
         </div>
 
         <div className="flex gap-1">
@@ -68,13 +68,14 @@ export default function ResourcesPage() {
           ))}
         </div>
 
-        <Select value={minLevel} onValueChange={setMinLevel}>
-          <SelectTrigger className="w-32 h-9 bg-card text-xs">
+        <Select value={minLevel} onValueChange={setMinLevel} disabled={categoryFilter.length === 0}>
+          <SelectTrigger className={`w-32 h-9 bg-card text-xs ${categoryFilter.length === 0 ? 'opacity-50' : ''}`}>
             <SelectValue placeholder="Min Level" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="0">Any Level</SelectItem>
-            {LEVELS.map(l => <SelectItem key={l} value={String(l)}>Level {l}+</SelectItem>)}
+            <SelectItem value="1">Level 1+</SelectItem>
+            <SelectItem value="2">Level 2+</SelectItem>
+            <SelectItem value="3">Level 3</SelectItem>
           </SelectContent>
         </Select>
       </div>

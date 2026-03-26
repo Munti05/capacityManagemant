@@ -64,8 +64,8 @@ export default function LoginPage() {
           </Button>
 
           <div className="text-xs text-muted-foreground text-center space-y-1 pt-2 border-t border-border">
-            <p className="font-mono">manager → user / manager</p>
-            <p className="font-mono">pm → user / pm</p>
+            <p className="font-mono">Manager → manager / password</p>
+            <p className="font-mono">PM → pm / password</p>
           </div>
         </form>
       </div>
