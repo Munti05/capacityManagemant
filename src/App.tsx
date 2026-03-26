@@ -26,7 +26,7 @@ function AuthenticatedRoutes() {
           <Route path="/" element={<Navigate to="/projects" replace />} />
           <Route path="/projects" element={<ProjectsPage />} />
           {isManager && <Route path="/projects/new" element={<NewProjectPage />} />}
-          <Route path="/skills" element={<SkillsPage />} />
+          <Route path="/resources" element={<SkillsPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </AppLayout>

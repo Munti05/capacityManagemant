@@ -22,12 +22,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   const login = (username: string, password: string): boolean => {
-    if (username === 'user' && password === 'manager') {
-      setUser({ username: 'user', role: 'manager', name: 'Manager Admin' });
+    if (username === 'manager' && password === 'password') {
+      setUser({ username: 'manager', role: 'manager', name: 'Manager Admin' });
       return true;
     }
-    if (username === 'user' && password === 'pm') {
-      setUser({ username: 'user', role: 'pm', name: 'Project Manager' });
+    if (username === 'pm' && password === 'password') {
+      setUser({ username: 'pm', role: 'pm', name: 'Project Manager' });
       return true;
     }
     return false;
