@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import ResourcesPage from '@/pages/ResourcesPage';
 import SkillsManagementPage from '@/pages/SkillsManagementPage';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 
 export default function SkillsPage() {
   const [view, setView] = useState<'employees' | 'skills'>('employees');
@@ -14,18 +12,27 @@ export default function SkillsPage() {
           <h1 className="text-xl font-semibold text-foreground mb-1">Resources</h1>
           <p className="text-sm text-muted-foreground">Manage team resources and company skills</p>
         </div>
-        <div className="flex items-center gap-3">
-          <Label htmlFor="view-toggle" className={`text-sm ${view === 'employees' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+        <div className="inline-flex rounded-lg border border-border bg-muted p-0.5">
+          <button
+            onClick={() => setView('employees')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              view === 'employees'
+                ? 'bg-card text-foreground shadow-[0_1px_3px_0_hsl(var(--foreground)/0.1),0_2px_6px_0_hsl(var(--foreground)/0.06)]'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
             Employees
-          </Label>
-          <Switch
-            id="view-toggle"
-            checked={view === 'skills'}
-            onCheckedChange={(checked) => setView(checked ? 'skills' : 'employees')}
-          />
-          <Label htmlFor="view-toggle" className={`text-sm ${view === 'skills' ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+          </button>
+          <button
+            onClick={() => setView('skills')}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+              view === 'skills'
+                ? 'bg-card text-foreground shadow-[0_1px_3px_0_hsl(var(--foreground)/0.1),0_2px_6px_0_hsl(var(--foreground)/0.06)]'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
             Skills
-          </Label>
+          </button>
         </div>
       </div>
 
