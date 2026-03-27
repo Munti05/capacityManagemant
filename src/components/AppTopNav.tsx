@@ -8,7 +8,7 @@ export default function AppTopNav() {
 
   return (
     <header className="h-12 bg-card border-b border-border flex items-center px-4 gap-6 shrink-0">
-      <h1 className="text-sm font-semibold text-foreground font-mono tracking-tight mr-2">ResAlloc</h1>
+      <h1 className="text-sm font-semibold text-foreground font-mono tracking-tight mr-2">CapMan</h1>
 
       <nav className="flex items-center gap-1">
         <NavLink
