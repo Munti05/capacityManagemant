@@ -112,14 +112,12 @@ export default function SkillsManagementPage() {
         <span className="flex-1">Name</span>
         <span className="w-24 text-center">Category</span>
         <span className="flex-1">Description</span>
-        <span className="w-20 text-center">Projects</span>
         <span className="w-16"></span>
       </div>
 
       {/* Skills list */}
       <div className="space-y-1">
         {filtered.map(skill => {
-          const usageCount = getSkillUsageCount(skill.id);
           return (
             <div key={skill.id} className="flex items-center gap-3 px-4 py-2.5 bg-card border border-border rounded-md hover:border-primary/30 transition-colors">
               {editingId === skill.id ? (
@@ -138,7 +136,7 @@ export default function SkillsManagementPage() {
                   <span className="text-sm font-medium text-foreground flex-1">{skill.name}</span>
                   <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded w-24 text-center">{skill.category}</span>
                   <span className="text-xs text-muted-foreground flex-1">{skill.description}</span>
-                  <span className="text-xs font-mono text-muted-foreground w-20 text-center">{usageCount} project{usageCount !== 1 ? 's' : ''}</span>
+                  
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(skill)}><Pencil className="w-3.5 h-3.5" /></Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSkill(skill.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
                 </>
