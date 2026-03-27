@@ -112,7 +112,6 @@ export default function SkillsManagementPage() {
         <span className="flex-1">Name</span>
         <span className="w-24 text-center">Category</span>
         <span className="flex-1">Description</span>
-        <span className="w-20 text-center">Projects</span>
         <span className="w-16"></span>
       </div>
 
