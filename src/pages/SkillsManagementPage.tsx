@@ -136,7 +136,7 @@ export default function SkillsManagementPage() {
                   <span className="text-sm font-medium text-foreground flex-1">{skill.name}</span>
                   <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded w-24 text-center">{skill.category}</span>
                   <span className="text-xs text-muted-foreground flex-1">{skill.description}</span>
-                  <span className="text-xs font-mono text-muted-foreground w-20 text-center">{usageCount} project{usageCount !== 1 ? 's' : ''}</span>
+                  
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(skill)}><Pencil className="w-3.5 h-3.5" /></Button>
                   <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSkill(skill.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
                 </>
