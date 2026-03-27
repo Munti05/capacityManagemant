@@ -118,7 +118,6 @@ export default function SkillsManagementPage() {
       {/* Skills list */}
       <div className="space-y-1">
         {filtered.map(skill => {
-          const usageCount = getSkillUsageCount(skill.id);
           return (
             <div key={skill.id} className="flex items-center gap-3 px-4 py-2.5 bg-card border border-border rounded-md hover:border-primary/30 transition-colors">
               {editingId === skill.id ? (
