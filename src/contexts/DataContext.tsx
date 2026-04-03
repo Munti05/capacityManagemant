@@ -39,7 +39,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status } : p));
   };
 
-  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate'>>) => {
+  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee'>>) => {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
   };
 
