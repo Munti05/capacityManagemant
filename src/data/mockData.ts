@@ -283,7 +283,7 @@ export const PROJECTS: Project[] = [
     id: 'p10', shortName: 'E2E', name: 'E-Commerce Replatform', description: 'Migrating legacy e-commerce to modern headless architecture.',
     status: 'Ongoing', client: 'ShopNow Ltd', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-03-01', endDate: '2026-08-31', progress: 15, overallCapacity: 180,
-    remainingCapacity: 153, estimatedCost: 750000, spentCost: 112500, estimatedRevenue: 1100000,
+    remainingCapacity: 153, estimatedCost: 750000, spentCost: 112500, estimatedRevenue: 1100000, netProfitMargin: 31.8, profitMarginExclEmployee: 38.0,
     skills: [
       { id: 'ps25', skillId: 's5', skillName: 'Next.js', level: 3, duration: 35, startDate: '2026-03-01', endDate: '2026-06-30', assignedEmployeeId: 'e15', assignedEmployeeName: 'Olivia White', fixed: false },
       { id: 'ps26', skillId: 's9', skillName: 'Go', level: 2, duration: 30, startDate: '2026-03-15', endDate: '2026-07-15', assignedEmployeeId: 'e25', assignedEmployeeName: 'Yuki Tanaka', fixed: false },
