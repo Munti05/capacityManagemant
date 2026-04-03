@@ -272,7 +272,7 @@ export const PROJECTS: Project[] = [
     id: 'p9', shortName: 'HCM', name: 'HR & Talent Management', description: 'Employee onboarding, performance reviews, and talent pipeline.',
     status: 'Planned', client: 'PeopleFirst', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-06-01', endDate: '2026-11-30', progress: 0, overallCapacity: 160,
-    remainingCapacity: 160, estimatedCost: 680000, spentCost: 0, estimatedRevenue: 1050000,
+    remainingCapacity: 160, estimatedCost: 680000, spentCost: 0, estimatedRevenue: 1050000, netProfitMargin: 35.2, profitMarginExclEmployee: 42.0,
     skills: [
       { id: 'ps22', skillId: 's5', skillName: 'Next.js', level: 3, duration: 30, startDate: '2026-06-01', endDate: '2026-09-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps23', skillId: 's11', skillName: '.NET / C#', level: 3, duration: 35, startDate: '2026-06-15', endDate: '2026-10-30', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
