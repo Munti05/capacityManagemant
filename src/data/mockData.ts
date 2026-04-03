@@ -187,7 +187,7 @@ export const PROJECTS: Project[] = [
     id: 'p1', shortName: 'CRM', name: 'Customer Relationship Management', description: 'Full CRM system with sales pipeline, customer tracking, and reporting.',
     status: 'Ongoing', client: 'Acme Corp', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-01-15', endDate: '2026-06-30', progress: 45, overallCapacity: 120,
-    remainingCapacity: 66, estimatedCost: 500000, spentCost: 225000, estimatedRevenue: 800000,
+    remainingCapacity: 66, estimatedCost: 500000, spentCost: 225000, estimatedRevenue: 800000, netProfitMargin: 37.5, profitMarginExclEmployee: 42.0,
     skills: [
       { id: 'ps1', skillId: 's1', skillName: 'React', level: 3, duration: 30, startDate: '2026-01-15', endDate: '2026-04-15', assignedEmployeeId: 'e1', assignedEmployeeName: 'Alice Johnson', fixed: false },
       { id: 'ps2', skillId: 's6', skillName: 'Python', level: 3, duration: 25, startDate: '2026-02-01', endDate: '2026-05-01', assignedEmployeeId: 'e2', assignedEmployeeName: 'Bob Smith', fixed: false },
