@@ -5,7 +5,7 @@ interface DataContextType {
   projects: Project[];
   skills: Skill[];
   employees: Employee[];
-  addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'spentCost' | 'skills'>) => void;
+  addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => void;
   updateProjectStatus: (projectId: string, status: ProjectStatus) => void;
   updateProject: (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate'>>) => void;
   addProjectSkill: (projectId: string, skill: Omit<ProjectSkill, 'id'>) => void;
