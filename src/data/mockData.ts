@@ -198,7 +198,7 @@ export const PROJECTS: Project[] = [
     id: 'p2', shortName: 'ERP', name: 'Enterprise Resource Planning', description: 'ERP module for inventory, procurement, and finance.',
     status: 'Planned', client: 'GlobalTech', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-04-01', endDate: '2026-12-31', progress: 0, overallCapacity: 200,
-    remainingCapacity: 200, estimatedCost: 1000000, spentCost: 0, estimatedRevenue: 1500000,
+    remainingCapacity: 200, estimatedCost: 1000000, spentCost: 0, estimatedRevenue: 1500000, netProfitMargin: 33.3, profitMarginExclEmployee: 40.0,
     skills: [
       { id: 'ps4', skillId: 's2', skillName: 'TypeScript', level: 3, duration: 40, startDate: '2026-04-01', endDate: '2026-08-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps5', skillId: 's7', skillName: 'Node.js', level: 3, duration: 35, startDate: '2026-05-01', endDate: '2026-10-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
