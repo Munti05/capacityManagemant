@@ -22,7 +22,10 @@ export default function NewProjectPage() {
     overallCapacity: '',
     pmIds: [] as string[],
     estimatedCost: '',
+    spentCost: '',
     estimatedRevenue: '',
+    netProfitMargin: '',
+    profitMarginExclEmployee: '',
   });
 
   const [error, setError] = useState('');
