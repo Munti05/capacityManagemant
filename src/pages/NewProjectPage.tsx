@@ -50,7 +50,10 @@ export default function NewProjectPage() {
       endDate: form.endDate,
       overallCapacity: Number(form.overallCapacity) || 0,
       estimatedCost: Number(form.estimatedCost) || 0,
+      spentCost: Number(form.spentCost) || 0,
       estimatedRevenue: Number(form.estimatedRevenue) || 0,
+      netProfitMargin: Number(form.netProfitMargin) || 0,
+      profitMarginExclEmployee: Number(form.profitMarginExclEmployee) || 0,
     });
 
     navigate('/projects');
