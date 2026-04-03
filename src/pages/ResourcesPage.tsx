@@ -101,10 +101,6 @@ export default function ResourcesPage() {
                 </div>
               ))}
             </div>
-            <div className="flex gap-2 text-xs pt-2 border-t border-border">
-              <Badge variant="outline" className="text-xs font-mono">Plan: {emp.plannedCapacity}d</Badge>
-              <Badge variant="outline" className="text-xs font-mono">Alloc: {emp.allocatedCapacity}d</Badge>
-            </div>
           </div>
         ))}
       </div>
