@@ -221,7 +221,7 @@ export function ProjectCard({ project }: { project: Project }) {
                 {isPM && (
                   <>
                     <Button variant="outline" size="sm" className="h-7 text-xs" onClick={calculateSuggestions}>
-                      <Calculator className="w-3 h-3 mr-1" /> Calculate Capacity
+                      <Calculator className="w-3 h-3 mr-1" /> Calculate
                     </Button>
                     <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setAddingSkill(!addingSkill)}>
                       <Plus className="w-3 h-3 mr-1" /> Add Skill
