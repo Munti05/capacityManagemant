@@ -5,9 +5,9 @@ interface DataContextType {
   projects: Project[];
   skills: Skill[];
   employees: Employee[];
-  addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'spentCost' | 'skills'>) => void;
+  addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => void;
   updateProjectStatus: (projectId: string, status: ProjectStatus) => void;
-  updateProject: (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate'>>) => void;
+  updateProject: (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee'>>) => void;
   addProjectSkill: (projectId: string, skill: Omit<ProjectSkill, 'id'>) => void;
   removeProjectSkill: (projectId: string, skillRowId: string) => void;
   updateProjectSkill: (projectId: string, skillRowId: string, updates: Partial<ProjectSkill>) => void;
@@ -24,13 +24,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [skills, setSkills] = useState<Skill[]>(SKILLS);
   const [employees] = useState<Employee[]>(EMPLOYEES);
 
-  const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'spentCost' | 'skills'>) => {
+  const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
     const newProject: Project = {
       ...project,
       id: `p${Date.now()}`,
       progress: 0,
       remainingCapacity: project.overallCapacity,
-      spentCost: 0,
       skills: [],
     };
     setProjects(prev => [...prev, newProject]);
@@ -40,7 +39,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status } : p));
   };
 
-  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate'>>) => {
+  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee'>>) => {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
   };
 

@@ -26,6 +26,9 @@ export function ProjectCard({ project }: { project: Project }) {
   const [editDesc, setEditDesc] = useState(project.description);
   const [editStart, setEditStart] = useState<Date | undefined>(parseISO(project.startDate));
   const [editEnd, setEditEnd] = useState<Date | undefined>(parseISO(project.endDate));
+  const [editSpentCost, setEditSpentCost] = useState(String(project.spentCost));
+  const [editNetProfit, setEditNetProfit] = useState(String(project.netProfitMargin));
+  const [editProfitExcl, setEditProfitExcl] = useState(String(project.profitMarginExclEmployee));
   const [addingSkill, setAddingSkill] = useState(false);
   const [newSkillId, setNewSkillId] = useState('');
   const [newSkillLevel, setNewSkillLevel] = useState('1');
@@ -48,6 +51,9 @@ export function ProjectCard({ project }: { project: Project }) {
       description: editDesc,
       startDate: editStart ? format(editStart, 'yyyy-MM-dd') : project.startDate,
       endDate: editEnd ? format(editEnd, 'yyyy-MM-dd') : project.endDate,
+      spentCost: Number(editSpentCost) || 0,
+      netProfitMargin: Number(editNetProfit) || 0,
+      profitMarginExclEmployee: Number(editProfitExcl) || 0,
     });
     setEditing(false);
   };
@@ -153,7 +159,7 @@ export function ProjectCard({ project }: { project: Project }) {
                   <Button variant="default" size="sm" className="h-7 text-xs" onClick={handleSaveEdit}>
                     <Check className="w-3 h-3 mr-1" /> Save
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(parseISO(project.startDate)); setEditEnd(parseISO(project.endDate)); }}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(parseISO(project.startDate)); setEditEnd(parseISO(project.endDate)); setEditSpentCost(String(project.spentCost)); setEditNetProfit(String(project.netProfitMargin)); setEditProfitExcl(String(project.profitMarginExclEmployee)); }}>
                     <X className="w-3 h-3 mr-1" /> Cancel
                   </Button>
                 </div>
@@ -209,8 +215,31 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
             <DetailItem label="Remaining Capacity" value={`${project.remainingCapacity} man-days`} />
             <DetailItem label="Estimated Cost" value={formatCurrency(project.estimatedCost)} />
-            <DetailItem label="Spent Cost" value={formatCurrency(project.spentCost)} />
+            {editing ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Spent Cost</p>
+                <Input type="number" value={editSpentCost} onChange={e => setEditSpentCost(e.target.value)} className="bg-background h-8 text-sm" />
+              </div>
+            ) : (
+              <DetailItem label="Spent Cost" value={formatCurrency(project.spentCost)} />
+            )}
             <DetailItem label="Estimated Revenue" value={formatCurrency(project.estimatedRevenue)} />
+            {editing ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Net Profit Margin Est. (%)</p>
+                <Input type="number" step="0.1" value={editNetProfit} onChange={e => setEditNetProfit(e.target.value)} className="bg-background h-8 text-sm" />
+              </div>
+            ) : (
+              <DetailItem label="Net Profit Margin Est." value={`${project.netProfitMargin}%`} />
+            )}
+            {editing ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Profit Margin Excl. Empl. (%)</p>
+                <Input type="number" step="0.1" value={editProfitExcl} onChange={e => setEditProfitExcl(e.target.value)} className="bg-background h-8 text-sm" />
+              </div>
+            ) : (
+              <DetailItem label="Profit Margin Excl. Empl." value={`${project.profitMarginExclEmployee}%`} />
+            )}
           </div>
 
           {/* Skills section */}

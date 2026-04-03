@@ -55,6 +55,8 @@ export interface Project {
   estimatedCost: number;
   spentCost: number;
   estimatedRevenue: number;
+  netProfitMargin: number;
+  profitMarginExclEmployee: number;
   skills: ProjectSkill[];
 }
 
@@ -185,7 +187,7 @@ export const PROJECTS: Project[] = [
     id: 'p1', shortName: 'CRM', name: 'Customer Relationship Management', description: 'Full CRM system with sales pipeline, customer tracking, and reporting.',
     status: 'Ongoing', client: 'Acme Corp', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-01-15', endDate: '2026-06-30', progress: 45, overallCapacity: 120,
-    remainingCapacity: 66, estimatedCost: 500000, spentCost: 225000, estimatedRevenue: 800000,
+    remainingCapacity: 66, estimatedCost: 500000, spentCost: 225000, estimatedRevenue: 800000, netProfitMargin: 37.5, profitMarginExclEmployee: 42.0,
     skills: [
       { id: 'ps1', skillId: 's1', skillName: 'React', level: 3, duration: 30, startDate: '2026-01-15', endDate: '2026-04-15', assignedEmployeeId: 'e1', assignedEmployeeName: 'Alice Johnson', fixed: false },
       { id: 'ps2', skillId: 's6', skillName: 'Python', level: 3, duration: 25, startDate: '2026-02-01', endDate: '2026-05-01', assignedEmployeeId: 'e2', assignedEmployeeName: 'Bob Smith', fixed: false },
@@ -196,7 +198,7 @@ export const PROJECTS: Project[] = [
     id: 'p2', shortName: 'ERP', name: 'Enterprise Resource Planning', description: 'ERP module for inventory, procurement, and finance.',
     status: 'Planned', client: 'GlobalTech', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-04-01', endDate: '2026-12-31', progress: 0, overallCapacity: 200,
-    remainingCapacity: 200, estimatedCost: 1000000, spentCost: 0, estimatedRevenue: 1500000,
+    remainingCapacity: 200, estimatedCost: 1000000, spentCost: 0, estimatedRevenue: 1500000, netProfitMargin: 33.3, profitMarginExclEmployee: 40.0,
     skills: [
       { id: 'ps4', skillId: 's2', skillName: 'TypeScript', level: 3, duration: 40, startDate: '2026-04-01', endDate: '2026-08-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps5', skillId: 's7', skillName: 'Node.js', level: 3, duration: 35, startDate: '2026-05-01', endDate: '2026-10-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
@@ -207,7 +209,7 @@ export const PROJECTS: Project[] = [
     id: 'p3', shortName: 'MOB', name: 'Mobile App Redesign', description: 'Complete redesign of the mobile application with new UX.',
     status: 'Ongoing', client: 'StartupXYZ', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-02-01', endDate: '2026-05-15', progress: 60, overallCapacity: 80,
-    remainingCapacity: 32, estimatedCost: 300000, spentCost: 180000, estimatedRevenue: 450000,
+    remainingCapacity: 32, estimatedCost: 300000, spentCost: 180000, estimatedRevenue: 450000, netProfitMargin: 33.3, profitMarginExclEmployee: 38.0,
     skills: [
       { id: 'ps7', skillId: 's23', skillName: 'Figma', level: 3, duration: 20, startDate: '2026-02-01', endDate: '2026-03-15', assignedEmployeeId: 'e6', assignedEmployeeName: 'Frank Lee', fixed: false },
       { id: 'ps8', skillId: 's1', skillName: 'React', level: 2, duration: 25, startDate: '2026-03-01', endDate: '2026-05-15', assignedEmployeeId: 'e4', assignedEmployeeName: 'Dan Wilson', fixed: false },
@@ -217,7 +219,7 @@ export const PROJECTS: Project[] = [
     id: 'p4', shortName: 'API', name: 'API Gateway Platform', description: 'Centralized API gateway with rate limiting, auth, and monitoring.',
     status: 'Finished', client: 'MegaCorp', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2025-09-01', endDate: '2026-01-31', progress: 100, overallCapacity: 90,
-    remainingCapacity: 0, estimatedCost: 400000, spentCost: 380000, estimatedRevenue: 600000,
+    remainingCapacity: 0, estimatedCost: 400000, spentCost: 380000, estimatedRevenue: 600000, netProfitMargin: 33.3, profitMarginExclEmployee: 36.7,
     skills: [
       { id: 'ps9', skillId: 's7', skillName: 'Node.js', level: 3, duration: 30, startDate: '2025-09-01', endDate: '2025-12-15', assignedEmployeeId: 'e3', assignedEmployeeName: 'Carol Davis', fixed: true },
       { id: 'ps10', skillId: 's17', skillName: 'Docker', level: 3, duration: 15, startDate: '2025-11-01', endDate: '2026-01-31', assignedEmployeeId: 'e3', assignedEmployeeName: 'Carol Davis', fixed: true },
@@ -227,7 +229,7 @@ export const PROJECTS: Project[] = [
     id: 'p5', shortName: 'DAS', name: 'Data Analytics Suite', description: 'Real-time analytics dashboard with ML-powered insights.',
     status: 'Canceled', client: 'DataDriven Inc', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2025-11-01', endDate: '2026-04-30', progress: 20, overallCapacity: 150,
-    remainingCapacity: 120, estimatedCost: 700000, spentCost: 140000, estimatedRevenue: 1200000,
+    remainingCapacity: 120, estimatedCost: 700000, spentCost: 140000, estimatedRevenue: 1200000, netProfitMargin: 41.7, profitMarginExclEmployee: 48.0,
     skills: [
       { id: 'ps11', skillId: 's6', skillName: 'Python', level: 3, duration: 40, startDate: '2025-11-01', endDate: '2026-03-01', assignedEmployeeId: 'e5', assignedEmployeeName: 'Eve Martinez', fixed: false },
       { id: 'ps12', skillId: 's10', skillName: 'GraphQL', level: 2, duration: 20, startDate: '2026-01-01', endDate: '2026-04-30', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
@@ -237,7 +239,7 @@ export const PROJECTS: Project[] = [
     id: 'p6', shortName: 'MKT', name: 'Marketing Automation Platform', description: 'Campaign management, email automation, and lead scoring system.',
     status: 'Ongoing', client: 'BrandWave', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-02-10', endDate: '2026-07-15', progress: 35, overallCapacity: 100,
-    remainingCapacity: 65, estimatedCost: 420000, spentCost: 147000, estimatedRevenue: 650000,
+    remainingCapacity: 65, estimatedCost: 420000, spentCost: 147000, estimatedRevenue: 650000, netProfitMargin: 35.4, profitMarginExclEmployee: 41.0,
     skills: [
       { id: 'ps13', skillId: 's1', skillName: 'React', level: 2, duration: 20, startDate: '2026-02-10', endDate: '2026-04-20', assignedEmployeeId: 'e7', assignedEmployeeName: 'Grace Kim', fixed: false },
       { id: 'ps14', skillId: 's6', skillName: 'Python', level: 3, duration: 30, startDate: '2026-03-01', endDate: '2026-06-15', assignedEmployeeId: 'e22', assignedEmployeeName: 'Vera Sokolova', fixed: false },
@@ -248,7 +250,7 @@ export const PROJECTS: Project[] = [
     id: 'p7', shortName: 'SEC', name: 'Security Compliance Portal', description: 'SOC 2 and ISO 27001 compliance tracking with automated audit trails.',
     status: 'Planned', client: 'FinSecure', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-05-01', endDate: '2026-10-31', progress: 0, overallCapacity: 130,
-    remainingCapacity: 130, estimatedCost: 560000, spentCost: 0, estimatedRevenue: 900000,
+    remainingCapacity: 130, estimatedCost: 560000, spentCost: 0, estimatedRevenue: 900000, netProfitMargin: 37.8, profitMarginExclEmployee: 44.0,
     skills: [
       { id: 'ps16', skillId: 's8', skillName: 'Java', level: 3, duration: 35, startDate: '2026-05-01', endDate: '2026-08-15', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps17', skillId: 's12', skillName: 'PostgreSQL', level: 3, duration: 20, startDate: '2026-06-01', endDate: '2026-09-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
@@ -259,7 +261,7 @@ export const PROJECTS: Project[] = [
     id: 'p8', shortName: 'IOT', name: 'IoT Fleet Manager', description: 'Real-time monitoring and control dashboard for industrial IoT devices.',
     status: 'Ongoing', client: 'SmartFactory GmbH', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-01-05', endDate: '2026-05-20', progress: 55, overallCapacity: 95,
-    remainingCapacity: 43, estimatedCost: 380000, spentCost: 209000, estimatedRevenue: 550000,
+    remainingCapacity: 43, estimatedCost: 380000, spentCost: 209000, estimatedRevenue: 550000, netProfitMargin: 30.9, profitMarginExclEmployee: 36.0,
     skills: [
       { id: 'ps19', skillId: 's9', skillName: 'Go', level: 3, duration: 25, startDate: '2026-01-05', endDate: '2026-03-30', assignedEmployeeId: 'e14', assignedEmployeeName: 'Nathan Park', fixed: true },
       { id: 'ps20', skillId: 's18', skillName: 'Kubernetes', level: 2, duration: 15, startDate: '2026-02-15', endDate: '2026-04-30', assignedEmployeeId: 'e12', assignedEmployeeName: 'Liam O\'Connor', fixed: false },
@@ -270,7 +272,7 @@ export const PROJECTS: Project[] = [
     id: 'p9', shortName: 'HCM', name: 'HR & Talent Management', description: 'Employee onboarding, performance reviews, and talent pipeline.',
     status: 'Planned', client: 'PeopleFirst', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-06-01', endDate: '2026-11-30', progress: 0, overallCapacity: 160,
-    remainingCapacity: 160, estimatedCost: 680000, spentCost: 0, estimatedRevenue: 1050000,
+    remainingCapacity: 160, estimatedCost: 680000, spentCost: 0, estimatedRevenue: 1050000, netProfitMargin: 35.2, profitMarginExclEmployee: 42.0,
     skills: [
       { id: 'ps22', skillId: 's5', skillName: 'Next.js', level: 3, duration: 30, startDate: '2026-06-01', endDate: '2026-09-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps23', skillId: 's11', skillName: '.NET / C#', level: 3, duration: 35, startDate: '2026-06-15', endDate: '2026-10-30', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
@@ -281,7 +283,7 @@ export const PROJECTS: Project[] = [
     id: 'p10', shortName: 'E2E', name: 'E-Commerce Replatform', description: 'Migrating legacy e-commerce to modern headless architecture.',
     status: 'Ongoing', client: 'ShopNow Ltd', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-03-01', endDate: '2026-08-31', progress: 15, overallCapacity: 180,
-    remainingCapacity: 153, estimatedCost: 750000, spentCost: 112500, estimatedRevenue: 1100000,
+    remainingCapacity: 153, estimatedCost: 750000, spentCost: 112500, estimatedRevenue: 1100000, netProfitMargin: 31.8, profitMarginExclEmployee: 38.0,
     skills: [
       { id: 'ps25', skillId: 's5', skillName: 'Next.js', level: 3, duration: 35, startDate: '2026-03-01', endDate: '2026-06-30', assignedEmployeeId: 'e15', assignedEmployeeName: 'Olivia White', fixed: false },
       { id: 'ps26', skillId: 's9', skillName: 'Go', level: 2, duration: 30, startDate: '2026-03-15', endDate: '2026-07-15', assignedEmployeeId: 'e25', assignedEmployeeName: 'Yuki Tanaka', fixed: false },
@@ -293,7 +295,7 @@ export const PROJECTS: Project[] = [
     id: 'p11', shortName: 'FIN', name: 'Financial Reporting Engine', description: 'Automated financial statement generation with regulatory compliance.',
     status: 'Finished', client: 'TrustBank', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2025-07-01', endDate: '2025-12-31', progress: 100, overallCapacity: 110,
-    remainingCapacity: 0, estimatedCost: 480000, spentCost: 460000, estimatedRevenue: 720000,
+    remainingCapacity: 0, estimatedCost: 480000, spentCost: 460000, estimatedRevenue: 720000, netProfitMargin: 33.3, profitMarginExclEmployee: 36.1,
     skills: [
       { id: 'ps29', skillId: 's8', skillName: 'Java', level: 3, duration: 35, startDate: '2025-07-01', endDate: '2025-10-31', assignedEmployeeId: 'e16', assignedEmployeeName: 'Paul Rivera', fixed: true },
       { id: 'ps30', skillId: 's12', skillName: 'PostgreSQL', level: 3, duration: 25, startDate: '2025-08-01', endDate: '2025-12-31', assignedEmployeeId: 'e18', assignedEmployeeName: 'Rachel Nguyen', fixed: true },
@@ -303,7 +305,7 @@ export const PROJECTS: Project[] = [
     id: 'p12', shortName: 'DLP', name: 'DevOps Learning Platform', description: 'Internal training platform for CI/CD, containers, and cloud skills.',
     status: 'Planned', client: 'Internal', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-07-01', endDate: '2026-09-30', progress: 0, overallCapacity: 60,
-    remainingCapacity: 60, estimatedCost: 180000, spentCost: 0, estimatedRevenue: 0,
+    remainingCapacity: 60, estimatedCost: 180000, spentCost: 0, estimatedRevenue: 0, netProfitMargin: 0, profitMarginExclEmployee: 0,
     skills: [
       { id: 'ps31', skillId: 's22', skillName: 'CI/CD', level: 2, duration: 15, startDate: '2026-07-01', endDate: '2026-08-15', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps32', skillId: 's17', skillName: 'Docker', level: 2, duration: 10, startDate: '2026-07-15', endDate: '2026-09-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
