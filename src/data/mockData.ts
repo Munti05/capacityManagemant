@@ -305,7 +305,7 @@ export const PROJECTS: Project[] = [
     id: 'p12', shortName: 'DLP', name: 'DevOps Learning Platform', description: 'Internal training platform for CI/CD, containers, and cloud skills.',
     status: 'Planned', client: 'Internal', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-07-01', endDate: '2026-09-30', progress: 0, overallCapacity: 60,
-    remainingCapacity: 60, estimatedCost: 180000, spentCost: 0, estimatedRevenue: 0,
+    remainingCapacity: 60, estimatedCost: 180000, spentCost: 0, estimatedRevenue: 0, netProfitMargin: 0, profitMarginExclEmployee: 0,
     skills: [
       { id: 'ps31', skillId: 's22', skillName: 'CI/CD', level: 2, duration: 15, startDate: '2026-07-01', endDate: '2026-08-15', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps32', skillId: 's17', skillName: 'Docker', level: 2, duration: 10, startDate: '2026-07-15', endDate: '2026-09-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
