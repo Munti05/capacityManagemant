@@ -239,7 +239,7 @@ export const PROJECTS: Project[] = [
     id: 'p6', shortName: 'MKT', name: 'Marketing Automation Platform', description: 'Campaign management, email automation, and lead scoring system.',
     status: 'Ongoing', client: 'BrandWave', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-02-10', endDate: '2026-07-15', progress: 35, overallCapacity: 100,
-    remainingCapacity: 65, estimatedCost: 420000, spentCost: 147000, estimatedRevenue: 650000,
+    remainingCapacity: 65, estimatedCost: 420000, spentCost: 147000, estimatedRevenue: 650000, netProfitMargin: 35.4, profitMarginExclEmployee: 41.0,
     skills: [
       { id: 'ps13', skillId: 's1', skillName: 'React', level: 2, duration: 20, startDate: '2026-02-10', endDate: '2026-04-20', assignedEmployeeId: 'e7', assignedEmployeeName: 'Grace Kim', fixed: false },
       { id: 'ps14', skillId: 's6', skillName: 'Python', level: 3, duration: 30, startDate: '2026-03-01', endDate: '2026-06-15', assignedEmployeeId: 'e22', assignedEmployeeName: 'Vera Sokolova', fixed: false },
