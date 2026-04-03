@@ -24,13 +24,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [skills, setSkills] = useState<Skill[]>(SKILLS);
   const [employees] = useState<Employee[]>(EMPLOYEES);
 
-  const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'spentCost' | 'skills'>) => {
+  const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
     const newProject: Project = {
       ...project,
       id: `p${Date.now()}`,
       progress: 0,
       remainingCapacity: project.overallCapacity,
-      spentCost: 0,
       skills: [],
     };
     setProjects(prev => [...prev, newProject]);
