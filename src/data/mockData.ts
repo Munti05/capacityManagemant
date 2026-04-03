@@ -295,7 +295,7 @@ export const PROJECTS: Project[] = [
     id: 'p11', shortName: 'FIN', name: 'Financial Reporting Engine', description: 'Automated financial statement generation with regulatory compliance.',
     status: 'Finished', client: 'TrustBank', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2025-07-01', endDate: '2025-12-31', progress: 100, overallCapacity: 110,
-    remainingCapacity: 0, estimatedCost: 480000, spentCost: 460000, estimatedRevenue: 720000,
+    remainingCapacity: 0, estimatedCost: 480000, spentCost: 460000, estimatedRevenue: 720000, netProfitMargin: 33.3, profitMarginExclEmployee: 36.1,
     skills: [
       { id: 'ps29', skillId: 's8', skillName: 'Java', level: 3, duration: 35, startDate: '2025-07-01', endDate: '2025-10-31', assignedEmployeeId: 'e16', assignedEmployeeName: 'Paul Rivera', fixed: true },
       { id: 'ps30', skillId: 's12', skillName: 'PostgreSQL', level: 3, duration: 25, startDate: '2025-08-01', endDate: '2025-12-31', assignedEmployeeId: 'e18', assignedEmployeeName: 'Rachel Nguyen', fixed: true },
