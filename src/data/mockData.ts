@@ -261,7 +261,7 @@ export const PROJECTS: Project[] = [
     id: 'p8', shortName: 'IOT', name: 'IoT Fleet Manager', description: 'Real-time monitoring and control dashboard for industrial IoT devices.',
     status: 'Ongoing', client: 'SmartFactory GmbH', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-01-05', endDate: '2026-05-20', progress: 55, overallCapacity: 95,
-    remainingCapacity: 43, estimatedCost: 380000, spentCost: 209000, estimatedRevenue: 550000,
+    remainingCapacity: 43, estimatedCost: 380000, spentCost: 209000, estimatedRevenue: 550000, netProfitMargin: 30.9, profitMarginExclEmployee: 36.0,
     skills: [
       { id: 'ps19', skillId: 's9', skillName: 'Go', level: 3, duration: 25, startDate: '2026-01-05', endDate: '2026-03-30', assignedEmployeeId: 'e14', assignedEmployeeName: 'Nathan Park', fixed: true },
       { id: 'ps20', skillId: 's18', skillName: 'Kubernetes', level: 2, duration: 15, startDate: '2026-02-15', endDate: '2026-04-30', assignedEmployeeId: 'e12', assignedEmployeeName: 'Liam O\'Connor', fixed: false },
