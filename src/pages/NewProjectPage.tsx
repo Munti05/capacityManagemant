@@ -133,14 +133,29 @@ export default function NewProjectPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
-            <Label className="text-xs text-muted-foreground">Fix Cost (HUF)</Label>
+            <Label className="text-xs text-muted-foreground">Estimated Cost (HUF)</Label>
             <Input type="number" value={form.estimatedCost} onChange={e => update('estimatedCost', e.target.value)} className="bg-background" />
           </div>
           <div>
-            <Label className="text-xs text-muted-foreground">Revenue (HUF)</Label>
+            <Label className="text-xs text-muted-foreground">Spent Cost (HUF)</Label>
+            <Input type="number" value={form.spentCost} onChange={e => update('spentCost', e.target.value)} className="bg-background" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Estimated Revenue (HUF)</Label>
             <Input type="number" value={form.estimatedRevenue} onChange={e => update('estimatedRevenue', e.target.value)} className="bg-background" />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label className="text-xs text-muted-foreground">Net Profit Margin Estimate (%)</Label>
+            <Input type="number" step="0.1" value={form.netProfitMargin} onChange={e => update('netProfitMargin', e.target.value)} className="bg-background" />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground">Profit Margin Excl. Employee Cost (%)</Label>
+            <Input type="number" step="0.1" value={form.profitMarginExclEmployee} onChange={e => update('profitMarginExclEmployee', e.target.value)} className="bg-background" />
           </div>
         </div>
 

@@ -215,8 +215,31 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
             <DetailItem label="Remaining Capacity" value={`${project.remainingCapacity} man-days`} />
             <DetailItem label="Estimated Cost" value={formatCurrency(project.estimatedCost)} />
-            <DetailItem label="Spent Cost" value={formatCurrency(project.spentCost)} />
+            {editing ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Spent Cost</p>
+                <Input type="number" value={editSpentCost} onChange={e => setEditSpentCost(e.target.value)} className="bg-background h-8 text-sm" />
+              </div>
+            ) : (
+              <DetailItem label="Spent Cost" value={formatCurrency(project.spentCost)} />
+            )}
             <DetailItem label="Estimated Revenue" value={formatCurrency(project.estimatedRevenue)} />
+            {editing ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Net Profit Margin Est. (%)</p>
+                <Input type="number" step="0.1" value={editNetProfit} onChange={e => setEditNetProfit(e.target.value)} className="bg-background h-8 text-sm" />
+              </div>
+            ) : (
+              <DetailItem label="Net Profit Margin Est." value={`${project.netProfitMargin}%`} />
+            )}
+            {editing ? (
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Profit Margin Excl. Empl. (%)</p>
+                <Input type="number" step="0.1" value={editProfitExcl} onChange={e => setEditProfitExcl(e.target.value)} className="bg-background h-8 text-sm" />
+              </div>
+            ) : (
+              <DetailItem label="Profit Margin Excl. Empl." value={`${project.profitMarginExclEmployee}%`} />
+            )}
           </div>
 
           {/* Skills section */}
