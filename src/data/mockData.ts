@@ -219,7 +219,7 @@ export const PROJECTS: Project[] = [
     id: 'p4', shortName: 'API', name: 'API Gateway Platform', description: 'Centralized API gateway with rate limiting, auth, and monitoring.',
     status: 'Finished', client: 'MegaCorp', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2025-09-01', endDate: '2026-01-31', progress: 100, overallCapacity: 90,
-    remainingCapacity: 0, estimatedCost: 400000, spentCost: 380000, estimatedRevenue: 600000,
+    remainingCapacity: 0, estimatedCost: 400000, spentCost: 380000, estimatedRevenue: 600000, netProfitMargin: 33.3, profitMarginExclEmployee: 36.7,
     skills: [
       { id: 'ps9', skillId: 's7', skillName: 'Node.js', level: 3, duration: 30, startDate: '2025-09-01', endDate: '2025-12-15', assignedEmployeeId: 'e3', assignedEmployeeName: 'Carol Davis', fixed: true },
       { id: 'ps10', skillId: 's17', skillName: 'Docker', level: 3, duration: 15, startDate: '2025-11-01', endDate: '2026-01-31', assignedEmployeeId: 'e3', assignedEmployeeName: 'Carol Davis', fixed: true },
