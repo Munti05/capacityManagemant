@@ -250,7 +250,7 @@ export const PROJECTS: Project[] = [
     id: 'p7', shortName: 'SEC', name: 'Security Compliance Portal', description: 'SOC 2 and ISO 27001 compliance tracking with automated audit trails.',
     status: 'Planned', client: 'FinSecure', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-05-01', endDate: '2026-10-31', progress: 0, overallCapacity: 130,
-    remainingCapacity: 130, estimatedCost: 560000, spentCost: 0, estimatedRevenue: 900000,
+    remainingCapacity: 130, estimatedCost: 560000, spentCost: 0, estimatedRevenue: 900000, netProfitMargin: 37.8, profitMarginExclEmployee: 44.0,
     skills: [
       { id: 'ps16', skillId: 's8', skillName: 'Java', level: 3, duration: 35, startDate: '2026-05-01', endDate: '2026-08-15', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
       { id: 'ps17', skillId: 's12', skillName: 'PostgreSQL', level: 3, duration: 20, startDate: '2026-06-01', endDate: '2026-09-01', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
