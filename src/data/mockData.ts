@@ -209,7 +209,7 @@ export const PROJECTS: Project[] = [
     id: 'p3', shortName: 'MOB', name: 'Mobile App Redesign', description: 'Complete redesign of the mobile application with new UX.',
     status: 'Ongoing', client: 'StartupXYZ', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2026-02-01', endDate: '2026-05-15', progress: 60, overallCapacity: 80,
-    remainingCapacity: 32, estimatedCost: 300000, spentCost: 180000, estimatedRevenue: 450000,
+    remainingCapacity: 32, estimatedCost: 300000, spentCost: 180000, estimatedRevenue: 450000, netProfitMargin: 33.3, profitMarginExclEmployee: 38.0,
     skills: [
       { id: 'ps7', skillId: 's23', skillName: 'Figma', level: 3, duration: 20, startDate: '2026-02-01', endDate: '2026-03-15', assignedEmployeeId: 'e6', assignedEmployeeName: 'Frank Lee', fixed: false },
       { id: 'ps8', skillId: 's1', skillName: 'React', level: 2, duration: 25, startDate: '2026-03-01', endDate: '2026-05-15', assignedEmployeeId: 'e4', assignedEmployeeName: 'Dan Wilson', fixed: false },
