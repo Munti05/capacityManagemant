@@ -55,6 +55,8 @@ export interface Project {
   estimatedCost: number;
   spentCost: number;
   estimatedRevenue: number;
+  netProfitMargin: number;
+  profitMarginExclEmployee: number;
   skills: ProjectSkill[];
 }
 
