@@ -51,6 +51,9 @@ export function ProjectCard({ project }: { project: Project }) {
       description: editDesc,
       startDate: editStart ? format(editStart, 'yyyy-MM-dd') : project.startDate,
       endDate: editEnd ? format(editEnd, 'yyyy-MM-dd') : project.endDate,
+      spentCost: Number(editSpentCost) || 0,
+      netProfitMargin: Number(editNetProfit) || 0,
+      profitMarginExclEmployee: Number(editProfitExcl) || 0,
     });
     setEditing(false);
   };
