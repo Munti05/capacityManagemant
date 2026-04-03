@@ -26,6 +26,9 @@ export function ProjectCard({ project }: { project: Project }) {
   const [editDesc, setEditDesc] = useState(project.description);
   const [editStart, setEditStart] = useState<Date | undefined>(parseISO(project.startDate));
   const [editEnd, setEditEnd] = useState<Date | undefined>(parseISO(project.endDate));
+  const [editSpentCost, setEditSpentCost] = useState(String(project.spentCost));
+  const [editNetProfit, setEditNetProfit] = useState(String(project.netProfitMargin));
+  const [editProfitExcl, setEditProfitExcl] = useState(String(project.profitMarginExclEmployee));
   const [addingSkill, setAddingSkill] = useState(false);
   const [newSkillId, setNewSkillId] = useState('');
   const [newSkillLevel, setNewSkillLevel] = useState('1');
