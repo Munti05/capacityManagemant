@@ -159,7 +159,7 @@ export function ProjectCard({ project }: { project: Project }) {
                   <Button variant="default" size="sm" className="h-7 text-xs" onClick={handleSaveEdit}>
                     <Check className="w-3 h-3 mr-1" /> Save
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(parseISO(project.startDate)); setEditEnd(parseISO(project.endDate)); }}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(parseISO(project.startDate)); setEditEnd(parseISO(project.endDate)); setEditSpentCost(String(project.spentCost)); setEditNetProfit(String(project.netProfitMargin)); setEditProfitExcl(String(project.profitMarginExclEmployee)); }}>
                     <X className="w-3 h-3 mr-1" /> Cancel
                   </Button>
                 </div>
