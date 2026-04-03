@@ -229,7 +229,7 @@ export const PROJECTS: Project[] = [
     id: 'p5', shortName: 'DAS', name: 'Data Analytics Suite', description: 'Real-time analytics dashboard with ML-powered insights.',
     status: 'Canceled', client: 'DataDriven Inc', pmIds: ['pm1'], pmNames: ['Project Manager'],
     startDate: '2025-11-01', endDate: '2026-04-30', progress: 20, overallCapacity: 150,
-    remainingCapacity: 120, estimatedCost: 700000, spentCost: 140000, estimatedRevenue: 1200000,
+    remainingCapacity: 120, estimatedCost: 700000, spentCost: 140000, estimatedRevenue: 1200000, netProfitMargin: 41.7, profitMarginExclEmployee: 48.0,
     skills: [
       { id: 'ps11', skillId: 's6', skillName: 'Python', level: 3, duration: 40, startDate: '2025-11-01', endDate: '2026-03-01', assignedEmployeeId: 'e5', assignedEmployeeName: 'Eve Martinez', fixed: false },
       { id: 'ps12', skillId: 's10', skillName: 'GraphQL', level: 2, duration: 20, startDate: '2026-01-01', endDate: '2026-04-30', assignedEmployeeId: null, assignedEmployeeName: null, fixed: false },
