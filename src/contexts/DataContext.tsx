@@ -5,7 +5,7 @@ interface DataContextType {
   projects: Project[];
   skills: Skill[];
   employees: Employee[];
-  addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => void;
+  addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => string;
   updateProjectStatus: (projectId: string, status: ProjectStatus) => void;
   updateProject: (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee' | 'fixedCost' | 'revenue' | 'status'>>) => void;
   addProjectSkill: (projectId: string, skill: Omit<ProjectSkill, 'id'>) => void;
@@ -25,14 +25,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [employees] = useState<Employee[]>(EMPLOYEES);
 
   const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
+    const id = `p${Date.now()}`;
     const newProject: Project = {
       ...project,
-      id: `p${Date.now()}`,
+      id,
       progress: 0,
       remainingCapacity: project.overallCapacity,
       skills: [],
     };
     setProjects(prev => [...prev, newProject]);
+    return id;
   };
 
   const updateProjectStatus = (projectId: string, status: ProjectStatus) => {
