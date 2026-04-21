@@ -108,6 +108,8 @@ export const SKILLS: Skill[] = [
   { id: 's25', name: 'Sketch', category: 'Design', description: 'Digital design toolkit for macOS' },
   { id: 's26', name: 'UX Research', category: 'Design', description: 'User research methodologies' },
   { id: 's27', name: 'Design Systems', category: 'Design', description: 'Building & maintaining design systems' },
+  // Project Management
+  { id: 's28', name: 'PM', category: 'Management', description: 'Project Management leadership' },
 ];
 
 // ── Employees (25+) ───────────────────────────────────────────────────────────
