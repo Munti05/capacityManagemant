@@ -5,67 +5,105 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ArrowLeft } from 'lucide-react';
-import { EMPLOYEES } from '@/data/mockData';
+import { ProjectStatus } from '@/data/mockData';
+
+const STATUS_OPTIONS: ProjectStatus[] = ['Planned', 'Ongoing', 'Completed', 'Cancelled', 'On Hold'];
 
 export default function NewProjectPage() {
   const navigate = useNavigate();
-  const { addProject } = useData();
+  const { addProject, addProjectSkill, skills, employees } = useData();
+
+  // Step 1: project info
+  const [step, setStep] = useState<1 | 2>(1);
+  const [createdProject, setCreatedProject] = useState<{
+    id: string;
+    startDate: string;
+    endDate: string;
+  } | null>(null);
 
   const [form, setForm] = useState({
-    shortName: '',
     name: '',
+    shortName: '',
     description: '',
-    client: '',
+    status: 'Planned' as ProjectStatus,
     startDate: '',
     endDate: '',
     overallCapacity: '',
-    pmIds: [] as string[],
-    estimatedCost: '',
-    spentCost: '',
-    estimatedRevenue: '',
-    netProfitMargin: '',
-    profitMarginExclEmployee: '',
+    fixedCost: '',
+    revenue: '',
   });
+
+  // Step 2: mandatory PM skill
+  const pmSkill = skills.find(s => s.name === 'PM');
+  const [pmCapacity, setPmCapacity] = useState('');
+  const [pmAssigneeId, setPmAssigneeId] = useState('');
 
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const update = (field: keyof typeof form, value: string) =>
+    setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.shortName.length !== 3) { setError('Short name must be exactly 3 letters'); return; }
-    if (!form.name || !form.startDate || !form.endDate) { setError('Please fill in all required fields'); return; }
-    if (!form.client) { setError('Client field is required'); return; }
+    setError('');
+    if (!form.name.trim()) { setError('Project name is required'); return; }
+    if (!form.shortName.trim()) { setError('Short name is required'); return; }
+    if (!form.startDate || !form.endDate) { setError('Start and end dates are required'); return; }
+    if (form.endDate < form.startDate) { setError('End date must be after start date'); return; }
 
-    const pmNames = form.pmIds.map(id => EMPLOYEES.find(e => e.id === id)?.name).filter(Boolean) as string[];
-
-    addProject({
+    const id = addProject({
       shortName: form.shortName.toUpperCase(),
-      name: form.name,
+      name: form.name.trim(),
       description: form.description,
-      status: 'Planned',
-      client: form.client,
-      pmIds: form.pmIds,
-      pmNames,
+      status: form.status,
+      client: '',
+      pmIds: [],
+      pmNames: [],
       startDate: form.startDate,
       endDate: form.endDate,
       overallCapacity: Number(form.overallCapacity) || 0,
-      estimatedCost: Number(form.estimatedCost) || 0,
-      spentCost: Number(form.spentCost) || 0,
-      estimatedRevenue: Number(form.estimatedRevenue) || 0,
-      netProfitMargin: Number(form.netProfitMargin) || 0,
-      profitMarginExclEmployee: Number(form.profitMarginExclEmployee) || 0,
+      fixedCost: Number(form.fixedCost) || 0,
+      revenue: Number(form.revenue) || 0,
+      // legacy fields kept in sync for back-compat
+      estimatedCost: Number(form.fixedCost) || 0,
+      spentCost: 0,
+      estimatedRevenue: Number(form.revenue) || 0,
+      netProfitMargin: 0,
+      profitMarginExclEmployee: 0,
+    });
+
+    setCreatedProject({ id, startDate: form.startDate, endDate: form.endDate });
+    setStep(2);
+  };
+
+  const handleAssignPm = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!createdProject || !pmSkill) return;
+    const cap = Number(pmCapacity);
+    if (Number.isNaN(cap) || cap <= 0 || cap > 1) {
+      setError('Capacity on project must be a number between 0 and 1');
+      return;
+    }
+    if (!pmAssigneeId) { setError('Please select a person to act as PM'); return; }
+
+    const assignee = employees.find(e => e.id === pmAssigneeId);
+    addProjectSkill(createdProject.id, {
+      skillId: pmSkill.id,
+      skillName: pmSkill.name,
+      level: 1,
+      duration: Math.max(1, Math.round(cap * 20)), // rough man-day estimate for legacy compat
+      capacityOnProject: cap,
+      startDate: createdProject.startDate,
+      endDate: createdProject.endDate,
+      assignedEmployeeId: pmAssigneeId,
+      assignedEmployeeName: assignee?.name || null,
+      fixed: true,
     });
 
     navigate('/projects');
-  };
-
-  const update = (field: string, value: string) => setForm(prev => ({ ...prev, [field]: value }));
-
-  const togglePm = (id: string) => {
-    setForm(prev => ({
-      ...prev,
-      pmIds: prev.pmIds.includes(id) ? prev.pmIds.filter(p => p !== id) : [...prev.pmIds, id],
-    }));
   };
 
   return (
@@ -74,98 +112,156 @@ export default function NewProjectPage() {
         <ArrowLeft className="w-4 h-4 mr-1" /> Back
       </Button>
 
-      <h1 className="text-xl font-semibold text-foreground mb-6">New Project</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-xl font-semibold text-foreground">New Project</h1>
+        <span className="text-xs text-muted-foreground">
+          Step {step} of 2 — {step === 1 ? 'Project details' : 'Assign PM'}
+        </span>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 bg-card border border-border rounded-lg p-6">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">Short Name (3 letters) *</Label>
-            <Input value={form.shortName} onChange={e => update('shortName', e.target.value.slice(0, 3))} className="bg-background font-mono uppercase" maxLength={3} />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Name *</Label>
-            <Input value={form.name} onChange={e => update('name', e.target.value)} className="bg-background" />
-          </div>
-        </div>
+      {step === 1 && (
+        <form onSubmit={handleCreateProject} className="space-y-5 bg-card border border-border rounded-lg p-6">
+          <section className="space-y-3">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">General Info</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Project Name *</Label>
+                <Input value={form.name} onChange={e => update('name', e.target.value)} className="bg-background" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Short Name *</Label>
+                <Input
+                  value={form.shortName}
+                  onChange={e => update('shortName', e.target.value)}
+                  className="bg-background font-mono uppercase"
+                />
+              </div>
+            </div>
 
-        <div>
-          <Label className="text-xs text-muted-foreground">Client *</Label>
-          <Input value={form.client} onChange={e => update('client', e.target.value)} className="bg-background" />
-        </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Description</Label>
+              <Textarea value={form.description} onChange={e => update('description', e.target.value)} className="bg-background" rows={3} />
+            </div>
 
-        <div>
-          <Label className="text-xs text-muted-foreground">Description</Label>
-          <Textarea value={form.description} onChange={e => update('description', e.target.value)} className="bg-background" rows={3} />
-        </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Project Status</Label>
+              <Select value={form.status} onValueChange={v => update('status', v as ProjectStatus)}>
+                <SelectTrigger className="bg-background w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_OPTIONS.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </section>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">Start Date *</Label>
-            <Input type="date" value={form.startDate} onChange={e => update('startDate', e.target.value)} className="bg-background" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">End Date *</Label>
-            <Input type="date" value={form.endDate} onChange={e => update('endDate', e.target.value)} className="bg-background" />
-          </div>
-        </div>
+          <section className="space-y-3 pt-2 border-t border-border">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timeline</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Start Date *</Label>
+                <Input type="date" value={form.startDate} onChange={e => update('startDate', e.target.value)} className="bg-background" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">End Date *</Label>
+                <Input type="date" value={form.endDate} onChange={e => update('endDate', e.target.value)} className="bg-background" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Overall Capacity (man-days)</Label>
+              <Input type="number" value={form.overallCapacity} onChange={e => update('overallCapacity', e.target.value)} className="bg-background w-48" />
+            </div>
+          </section>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">PM Capacity (man-days)</Label>
-            <Input type="number" value={form.overallCapacity} onChange={e => update('overallCapacity', e.target.value)} className="bg-background" />
+          <section className="space-y-3 pt-2 border-t border-border">
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Financials</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-xs text-muted-foreground">Fixed Cost (HUF)</Label>
+                <Input type="number" value={form.fixedCost} onChange={e => update('fixedCost', e.target.value)} className="bg-background" />
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Revenue (HUF)</Label>
+                <Input type="number" value={form.revenue} onChange={e => update('revenue', e.target.value)} className="bg-background" />
+              </div>
+            </div>
+          </section>
+
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <div className="flex gap-2 pt-2">
+            <Button type="submit">Continue → Assign PM</Button>
+            <Button type="button" variant="outline" onClick={() => navigate('/projects')}>Cancel</Button>
           </div>
+        </form>
+      )}
+
+      {step === 2 && createdProject && (
+        <form onSubmit={handleAssignPm} className="space-y-4 bg-card border border-border rounded-lg p-6">
           <div>
-            <Label className="text-xs text-muted-foreground">Assign PM(s) — select multiple</Label>
-            <div className="space-y-1 mt-1 max-h-32 overflow-auto border border-border rounded-md p-2 bg-background">
-              {EMPLOYEES.map(emp => (
-                <label key={emp.id} className="flex items-center gap-2 text-sm text-foreground cursor-pointer hover:bg-accent rounded px-1 py-0.5">
-                  <input
-                    type="checkbox"
-                    checked={form.pmIds.includes(emp.id)}
-                    onChange={() => togglePm(emp.id)}
-                    className="rounded border-border"
-                  />
-                  {emp.name}
-                  <span className="text-xs text-muted-foreground ml-auto">{emp.jobTitle}</span>
-                </label>
-              ))}
+            <h2 className="text-sm font-semibold text-foreground">Mandatory: assign a Project Manager</h2>
+            <p className="text-xs text-muted-foreground mt-1">
+              Every project must have a PM. The skill below is pre-filled — choose the person and their capacity.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Skill</Label>
+              <Input value="PM" readOnly className="bg-muted" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Level</Label>
+              <Input value="Lv.1" readOnly className="bg-muted" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Start</Label>
+              <Input value={createdProject.startDate} readOnly className="bg-muted font-mono" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">End</Label>
+              <Input value={createdProject.endDate} readOnly className="bg-muted font-mono" />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Capacity on project (0–1) *</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                max="1"
+                value={pmCapacity}
+                onChange={e => setPmCapacity(e.target.value)}
+                placeholder="e.g. 0.5"
+                className="bg-background"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Assigned To *</Label>
+              <Select value={pmAssigneeId} onValueChange={setPmAssigneeId}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Select person..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {employees.map(emp => (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      {emp.name} <span className="text-xs text-muted-foreground ml-1">— {emp.jobTitle}</span>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">Estimated Cost (HUF)</Label>
-            <Input type="number" value={form.estimatedCost} onChange={e => update('estimatedCost', e.target.value)} className="bg-background" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Spent Cost (HUF)</Label>
-            <Input type="number" value={form.spentCost} onChange={e => update('spentCost', e.target.value)} className="bg-background" />
-          </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Estimated Revenue (HUF)</Label>
-            <Input type="number" value={form.estimatedRevenue} onChange={e => update('estimatedRevenue', e.target.value)} className="bg-background" />
-          </div>
-        </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label className="text-xs text-muted-foreground">Net Profit Margin Estimate (%)</Label>
-            <Input type="number" step="0.1" value={form.netProfitMargin} onChange={e => update('netProfitMargin', e.target.value)} className="bg-background" />
+          <div className="flex gap-2 pt-2">
+            <Button type="submit">Confirm PM Assignment</Button>
           </div>
-          <div>
-            <Label className="text-xs text-muted-foreground">Profit Margin Excl. Employee Cost (%)</Label>
-            <Input type="number" step="0.1" value={form.profitMarginExclEmployee} onChange={e => update('profitMarginExclEmployee', e.target.value)} className="bg-background" />
-          </div>
-        </div>
-
-        {error && <p className="text-sm text-destructive">{error}</p>}
-
-        <div className="flex gap-2 pt-2">
-          <Button type="submit">Create Project</Button>
-          <Button type="button" variant="outline" onClick={() => navigate('/projects')}>Cancel</Button>
-        </div>
-      </form>
+        </form>
+      )}
     </div>
   );
 }
