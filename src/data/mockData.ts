@@ -2,7 +2,8 @@ export interface Skill {
   id: string;
   name: string;
   category: string;
-  description: string;
+  /** Deprecated — kept optional for back-compat with seed data */
+  description?: string;
 }
 
 export interface EmployeeSkill {
@@ -14,9 +15,14 @@ export interface EmployeeSkill {
 export interface Employee {
   id: string;
   name: string;
-  jobTitle: string;
-  salary: number;
-  experience: number; // years
+  /** Legacy — hidden from card view, kept for back-compat */
+  jobTitle?: string;
+  salary?: number;
+  experience?: number; // years
+  /** New fields */
+  baseCapacity?: number; // default 1.0 (full-time)
+  hourlyRate?: number;
+  location?: string;
   skills: EmployeeSkill[];
   plannedCapacity: number;
   allocatedCapacity: number;

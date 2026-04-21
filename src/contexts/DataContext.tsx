@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Project, PROJECTS, SKILLS, EMPLOYEES, Skill, Employee, ProjectStatus, ProjectSkill } from '@/data/mockData';
+import { Project, PROJECTS, SKILLS, EMPLOYEES, Skill, Employee, EmployeeSkill, ProjectStatus, ProjectSkill } from '@/data/mockData';
 
 interface DataContextType {
   projects: Project[];
@@ -15,6 +15,9 @@ interface DataContextType {
   deleteSkill: (skillId: string) => void;
   updateSkill: (skill: Skill) => void;
   getSkillUsageCount: (skillId: string) => number;
+  addEmployee: (employee: Omit<Employee, 'id' | 'skills' | 'plannedCapacity' | 'allocatedCapacity' | 'totalCapacity'>) => string;
+  addEmployeeSkill: (employeeId: string, skill: EmployeeSkill) => void;
+  removeEmployeeSkill: (employeeId: string, skillId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -22,7 +25,7 @@ const DataContext = createContext<DataContextType | null>(null);
 export function DataProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
   const [skills, setSkills] = useState<Skill[]>(SKILLS);
-  const [employees] = useState<Employee[]>(EMPLOYEES);
+  const [employees, setEmployees] = useState<Employee[]>(EMPLOYEES);
 
   const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
     const id = `p${Date.now()}`;
@@ -85,12 +88,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
     ).length;
   };
 
+  const addEmployee = (employee: Omit<Employee, 'id' | 'skills' | 'plannedCapacity' | 'allocatedCapacity' | 'totalCapacity'>) => {
+    const id = `e${Date.now()}`;
+    const totalCapacity = Math.round((employee.baseCapacity ?? 1) * 40);
+    const newEmployee: Employee = {
+      ...employee,
+      id,
+      skills: [],
+      plannedCapacity: 0,
+      allocatedCapacity: 0,
+      totalCapacity,
+    };
+    setEmployees(prev => [...prev, newEmployee]);
+    return id;
+  };
+
+  const addEmployeeSkill = (employeeId: string, skill: EmployeeSkill) => {
+    setEmployees(prev => prev.map(e => {
+      if (e.id !== employeeId) return e;
+      if (e.skills.some(s => s.skillId === skill.skillId)) return e;
+      return { ...e, skills: [...e.skills, skill] };
+    }));
+  };
+
+  const removeEmployeeSkill = (employeeId: string, skillId: string) => {
+    setEmployees(prev => prev.map(e =>
+      e.id === employeeId ? { ...e, skills: e.skills.filter(s => s.skillId !== skillId) } : e
+    ));
+  };
+
   return (
     <DataContext.Provider value={{
       projects, skills, employees,
       addProject, updateProjectStatus, updateProject,
       addProjectSkill, removeProjectSkill, updateProjectSkill,
       addSkill, deleteSkill, updateSkill, getSkillUsageCount,
+      addEmployee, addEmployeeSkill, removeEmployeeSkill,
     }}>
       {children}
     </DataContext.Provider>
