@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Project, PROJECTS, SKILLS, EMPLOYEES, Skill, Employee, ProjectStatus, ProjectSkill } from '@/data/mockData';
+import { Project, PROJECTS, SKILLS, EMPLOYEES, Skill, Employee, EmployeeSkill, ProjectStatus, ProjectSkill } from '@/data/mockData';
 
 interface DataContextType {
   projects: Project[];
@@ -15,6 +15,9 @@ interface DataContextType {
   deleteSkill: (skillId: string) => void;
   updateSkill: (skill: Skill) => void;
   getSkillUsageCount: (skillId: string) => number;
+  addEmployee: (employee: Omit<Employee, 'id' | 'skills' | 'plannedCapacity' | 'allocatedCapacity' | 'totalCapacity'>) => string;
+  addEmployeeSkill: (employeeId: string, skill: EmployeeSkill) => void;
+  removeEmployeeSkill: (employeeId: string, skillId: string) => void;
 }
 
 const DataContext = createContext<DataContextType | null>(null);
@@ -22,7 +25,7 @@ const DataContext = createContext<DataContextType | null>(null);
 export function DataProvider({ children }: { children: ReactNode }) {
   const [projects, setProjects] = useState<Project[]>(PROJECTS);
   const [skills, setSkills] = useState<Skill[]>(SKILLS);
-  const [employees] = useState<Employee[]>(EMPLOYEES);
+  const [employees, setEmployees] = useState<Employee[]>(EMPLOYEES);
 
   const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
     const id = `p${Date.now()}`;
