@@ -24,8 +24,8 @@ export function ProjectCard({ project }: { project: Project }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editDesc, setEditDesc] = useState(project.description);
-  const [editStart, setEditStart] = useState<Date | undefined>(parseISO(project.startDate));
-  const [editEnd, setEditEnd] = useState<Date | undefined>(parseISO(project.endDate));
+  const [editStart, setEditStart] = useState<Date | undefined>(project.startDate ? parseISO(project.startDate) : undefined);
+  const [editEnd, setEditEnd] = useState<Date | undefined>(project.endDate ? parseISO(project.endDate) : undefined);
   const [editSpentCost, setEditSpentCost] = useState(String(project.spentCost));
   const [editNetProfit, setEditNetProfit] = useState(String(project.netProfitMargin));
   const [editProfitExcl, setEditProfitExcl] = useState(String(project.profitMarginExclEmployee));
