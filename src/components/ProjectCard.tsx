@@ -273,11 +273,12 @@ export function ProjectCard({ project }: { project: Project }) {
             {/* Skill list header */}
             {project.skills.length > 0 && (
               <div className="grid gap-3 text-xs text-muted-foreground font-medium uppercase tracking-wider px-3 py-1.5 border-b border-border mb-1"
-                style={{ gridTemplateColumns: showPersonColumn ? '1fr 50px 1fr 80px 1fr 70px' : '1fr 50px 1fr 80px 70px' }}>
+                style={{ gridTemplateColumns: showPersonColumn ? '1fr 50px 1fr 80px 90px 1fr 70px' : '1fr 50px 1fr 80px 90px 70px' }}>
                 <span>Skill</span>
                 <span>Level</span>
                 <span>Interval</span>
                 <span>Effort</span>
+                <span>Cap. on proj.</span>
                 {showPersonColumn && <span>Assigned</span>}
                 <span></span>
               </div>
@@ -288,11 +289,14 @@ export function ProjectCard({ project }: { project: Project }) {
                 const rowComplete = isSkillRowComplete(skill);
                 return (
                   <div key={skill.id} className="grid gap-3 items-center bg-background rounded-md px-3 py-2 text-sm"
-                    style={{ gridTemplateColumns: showPersonColumn ? '1fr 50px 1fr 80px 1fr 70px' : '1fr 50px 1fr 80px 70px' }}>
+                    style={{ gridTemplateColumns: showPersonColumn ? '1fr 50px 1fr 80px 90px 1fr 70px' : '1fr 50px 1fr 80px 90px 70px' }}>
                     <span className="font-medium text-foreground">{skill.skillName}</span>
                     <Badge variant="outline" className="text-xs font-mono w-fit">Lv.{skill.level}</Badge>
                     <span className="text-xs text-muted-foreground font-mono">{skill.startDate} – {skill.endDate}</span>
                     <span className="text-xs text-muted-foreground font-mono">{skill.duration}d</span>
+                    <span className="text-xs text-muted-foreground font-mono">
+                      {typeof skill.capacityOnProject === 'number' ? skill.capacityOnProject.toFixed(2) : '—'}
+                    </span>
                     {showPersonColumn && (
                       <div>
                         {isPM ? (
@@ -360,7 +364,7 @@ export function ProjectCard({ project }: { project: Project }) {
             {/* Add skill form */}
             {addingSkill && isPM && (
               <div className="mt-2 p-3 border border-border rounded-md bg-background animate-fade-in">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
                   <Select value={newSkillId} onValueChange={setNewSkillId}>
                     <SelectTrigger className="h-8 text-xs bg-card">
                       <SelectValue placeholder="Select skill..." />
@@ -378,9 +382,20 @@ export function ProjectCard({ project }: { project: Project }) {
                     </SelectContent>
                   </Select>
                   <Input type="number" placeholder="Man-days" value={newSkillDuration} onChange={e => setNewSkillDuration(e.target.value)} className="h-8 text-xs bg-card" />
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    max="1"
+                    placeholder="Cap. 0–1"
+                    value={newSkillCapacity}
+                    onChange={e => { setNewSkillCapacity(e.target.value); setCapacityError(''); }}
+                    className="h-8 text-xs bg-card"
+                  />
                   <Input type="date" placeholder="Start" value={newSkillStart} onChange={e => setNewSkillStart(e.target.value)} className="h-8 text-xs bg-card" />
                   <Input type="date" placeholder="End" value={newSkillEnd} onChange={e => setNewSkillEnd(e.target.value)} className="h-8 text-xs bg-card" />
                 </div>
+                {capacityError && <p className="text-xs text-destructive mt-1">{capacityError}</p>}
                 <div className="flex gap-2 mt-2">
                   <Button size="sm" className="h-7 text-xs" onClick={handleAddSkill} disabled={!newSkillAllFilled}>Add</Button>
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setAddingSkill(false)}>Cancel</Button>
