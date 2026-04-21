@@ -20,7 +20,7 @@ export interface Employee {
   salary?: number;
   experience?: number; // years
   /** New fields */
-  baseCapacity: number; // default 1.0 (full-time)
+  baseCapacity?: number; // default 1.0 (full-time)
   hourlyRate?: number;
   location?: string;
   skills: EmployeeSkill[];
