@@ -29,7 +29,7 @@ export interface ProjectSkill {
   skillName: string;
   level: number; // 1-3
   duration: number; // man-days (legacy total capacity for this skill row)
-  capacityOnProject: number; // 0-1 (fractional allocation)
+  capacityOnProject?: number; // 0-1 (fractional allocation)
   startDate: string;
   endDate: string;
   assignedEmployeeId: string | null;
@@ -62,8 +62,8 @@ export interface Project {
   overallCapacity: number;
   remainingCapacity: number;
   /** New simplified financials */
-  fixedCost: number;
-  revenue: number;
+  fixedCost?: number;
+  revenue?: number;
   /** Legacy financial fields kept for back-compat with existing seed data */
   estimatedCost: number;
   spentCost: number;
