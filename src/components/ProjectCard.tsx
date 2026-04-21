@@ -134,7 +134,7 @@ export function ProjectCard({ project }: { project: Project }) {
         </span>
         <span className="text-sm font-medium text-foreground truncate flex-1">{project.name}</span>
         <StatusBadge status={project.status} />
-        <span className="text-xs text-muted-foreground hidden md:inline border-l border-border pl-3">{project.pmNames.join(', ')}</span>
+        {/* PM intentionally hidden in summary view — managed via skills */}
         <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
         <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
         <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
