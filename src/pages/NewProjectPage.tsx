@@ -30,7 +30,6 @@ export default function NewProjectPage() {
     status: 'Planned' as ProjectStatus,
     startDate: '',
     endDate: '',
-    overallCapacity: '',
     fixedCost: '',
     revenue: '',
   });
@@ -45,13 +44,27 @@ export default function NewProjectPage() {
   const update = (field: keyof typeof form, value: string) =>
     setForm(prev => ({ ...prev, [field]: value }));
 
+  // Convert "YYYY.MM.DD" → ISO "YYYY-MM-DD". Returns null if invalid.
+  const parseDottedDate = (s: string): string | null => {
+    const m = s.match(/^(\d{4})\.(\d{2})\.(\d{2})$/);
+    if (!m) return null;
+    const [, y, mo, d] = m;
+    const yearNum = +y, monthNum = +mo, dayNum = +d;
+    if (monthNum < 1 || monthNum > 12 || dayNum < 1 || dayNum > 31) return null;
+    const dt = new Date(Date.UTC(yearNum, monthNum - 1, dayNum));
+    if (dt.getUTCMonth() !== monthNum - 1 || dt.getUTCDate() !== dayNum) return null;
+    return `${y}-${mo}-${d}`;
+  };
+
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     if (!form.name.trim()) { setError('Project name is required'); return; }
     if (!form.shortName.trim()) { setError('Short name is required'); return; }
-    if (!form.startDate || !form.endDate) { setError('Start and end dates are required'); return; }
-    if (form.endDate < form.startDate) { setError('End date must be after start date'); return; }
+    const startIso = parseDottedDate(form.startDate);
+    const endIso = parseDottedDate(form.endDate);
+    if (!startIso || !endIso) { setError('Dates must be in format YYYY.MM.DD (e.g. 2026.04.21)'); return; }
+    if (endIso < startIso) { setError('End date must be after start date'); return; }
 
     const id = addProject({
       shortName: form.shortName.toUpperCase(),
@@ -61,9 +74,10 @@ export default function NewProjectPage() {
       client: '',
       pmIds: [],
       pmNames: [],
-      startDate: form.startDate,
-      endDate: form.endDate,
-      overallCapacity: Number(form.overallCapacity) || 0,
+      startDate: startIso,
+      endDate: endIso,
+      // overall capacity is now derived from assigned skills — start at 0
+      overallCapacity: 0,
       fixedCost: Number(form.fixedCost) || 0,
       revenue: Number(form.revenue) || 0,
       // legacy fields kept in sync for back-compat
@@ -74,7 +88,7 @@ export default function NewProjectPage() {
       profitMarginExclEmployee: 0,
     });
 
-    setCreatedProject({ id, startDate: form.startDate, endDate: form.endDate });
+    setCreatedProject({ id, startDate: startIso, endDate: endIso });
     setStep(2);
   };
 
