@@ -224,6 +224,12 @@ export function ProjectCard({ project }: { project: Project }) {
               <DetailItem label="End Date" value={project.endDate} />
             )}
             <DetailItem label="Remaining Capacity" value={`${project.remainingCapacity} man-days`} />
+            {typeof project.fixedCost === 'number' && (
+              <DetailItem label="Fixed Cost" value={formatCurrency(project.fixedCost)} />
+            )}
+            {typeof project.revenue === 'number' && (
+              <DetailItem label="Revenue" value={formatCurrency(project.revenue)} />
+            )}
             <DetailItem label="Estimated Cost" value={formatCurrency(project.estimatedCost)} />
             {editing ? (
               <div>
