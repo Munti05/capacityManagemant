@@ -176,18 +176,31 @@ export default function NewProjectPage() {
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timeline</h2>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="text-xs text-muted-foreground">Start Date *</Label>
-                <Input type="date" value={form.startDate} onChange={e => update('startDate', e.target.value)} className="bg-background" />
+                <Label className="text-xs text-muted-foreground">Start Date * <span className="text-muted-foreground/70">(YYYY.MM.DD)</span></Label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="2026.04.21"
+                  value={form.startDate}
+                  onChange={e => update('startDate', e.target.value)}
+                  className="bg-background font-mono"
+                />
               </div>
               <div>
-                <Label className="text-xs text-muted-foreground">End Date *</Label>
-                <Input type="date" value={form.endDate} onChange={e => update('endDate', e.target.value)} className="bg-background" />
+                <Label className="text-xs text-muted-foreground">End Date * <span className="text-muted-foreground/70">(YYYY.MM.DD)</span></Label>
+                <Input
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="2026.12.31"
+                  value={form.endDate}
+                  onChange={e => update('endDate', e.target.value)}
+                  className="bg-background font-mono"
+                />
               </div>
             </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Overall Capacity (man-days)</Label>
-              <Input type="number" value={form.overallCapacity} onChange={e => update('overallCapacity', e.target.value)} className="bg-background w-48" />
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Overall capacity is calculated automatically from assigned skills.
+            </p>
           </section>
 
           <section className="space-y-3 pt-2 border-t border-border">
