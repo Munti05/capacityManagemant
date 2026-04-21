@@ -88,12 +88,42 @@ export function DataProvider({ children }: { children: ReactNode }) {
     ).length;
   };
 
+  const addEmployee = (employee: Omit<Employee, 'id' | 'skills' | 'plannedCapacity' | 'allocatedCapacity' | 'totalCapacity'>) => {
+    const id = `e${Date.now()}`;
+    const totalCapacity = Math.round((employee.baseCapacity ?? 1) * 40);
+    const newEmployee: Employee = {
+      ...employee,
+      id,
+      skills: [],
+      plannedCapacity: 0,
+      allocatedCapacity: 0,
+      totalCapacity,
+    };
+    setEmployees(prev => [...prev, newEmployee]);
+    return id;
+  };
+
+  const addEmployeeSkill = (employeeId: string, skill: EmployeeSkill) => {
+    setEmployees(prev => prev.map(e => {
+      if (e.id !== employeeId) return e;
+      if (e.skills.some(s => s.skillId === skill.skillId)) return e;
+      return { ...e, skills: [...e.skills, skill] };
+    }));
+  };
+
+  const removeEmployeeSkill = (employeeId: string, skillId: string) => {
+    setEmployees(prev => prev.map(e =>
+      e.id === employeeId ? { ...e, skills: e.skills.filter(s => s.skillId !== skillId) } : e
+    ));
+  };
+
   return (
     <DataContext.Provider value={{
       projects, skills, employees,
       addProject, updateProjectStatus, updateProject,
       addProjectSkill, removeProjectSkill, updateProjectSkill,
       addSkill, deleteSkill, updateSkill, getSkillUsageCount,
+      addEmployee, addEmployeeSkill, removeEmployeeSkill,
     }}>
       {children}
     </DataContext.Provider>
