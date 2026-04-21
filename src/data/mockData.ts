@@ -28,7 +28,8 @@ export interface ProjectSkill {
   skillId: string;
   skillName: string;
   level: number; // 1-3
-  duration: number; // man-days
+  duration: number; // man-days (legacy total capacity for this skill row)
+  capacityOnProject: number; // 0-1 (fractional allocation)
   startDate: string;
   endDate: string;
   assignedEmployeeId: string | null;
@@ -36,7 +37,15 @@ export interface ProjectSkill {
   fixed: boolean;
 }
 
-export type ProjectStatus = 'Planned' | 'Ongoing' | 'Canceled' | 'Finished';
+export type ProjectStatus =
+  | 'Planned'
+  | 'Ongoing'
+  | 'Completed'
+  | 'Cancelled'
+  | 'On Hold'
+  // legacy values kept for backwards compatibility with seed data
+  | 'Canceled'
+  | 'Finished';
 
 export interface Project {
   id: string;
@@ -52,6 +61,10 @@ export interface Project {
   progress: number;
   overallCapacity: number;
   remainingCapacity: number;
+  /** New simplified financials */
+  fixedCost: number;
+  revenue: number;
+  /** Legacy financial fields kept for back-compat with existing seed data */
   estimatedCost: number;
   spentCost: number;
   estimatedRevenue: number;
