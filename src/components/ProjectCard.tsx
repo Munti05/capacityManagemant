@@ -24,8 +24,8 @@ export function ProjectCard({ project }: { project: Project }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editDesc, setEditDesc] = useState(project.description);
-  const [editStart, setEditStart] = useState<Date | undefined>(parseISO(project.startDate));
-  const [editEnd, setEditEnd] = useState<Date | undefined>(parseISO(project.endDate));
+  const [editStart, setEditStart] = useState<Date | undefined>(project.startDate ? parseISO(project.startDate) : undefined);
+  const [editEnd, setEditEnd] = useState<Date | undefined>(project.endDate ? parseISO(project.endDate) : undefined);
   const [editSpentCost, setEditSpentCost] = useState(String(project.spentCost));
   const [editNetProfit, setEditNetProfit] = useState(String(project.netProfitMargin));
   const [editProfitExcl, setEditProfitExcl] = useState(String(project.profitMarginExclEmployee));
@@ -169,7 +169,7 @@ export function ProjectCard({ project }: { project: Project }) {
                   <Button variant="default" size="sm" className="h-7 text-xs" onClick={handleSaveEdit}>
                     <Check className="w-3 h-3 mr-1" /> Save
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(parseISO(project.startDate)); setEditEnd(parseISO(project.endDate)); setEditSpentCost(String(project.spentCost)); setEditNetProfit(String(project.netProfitMargin)); setEditProfitExcl(String(project.profitMarginExclEmployee)); }}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(project.startDate ? parseISO(project.startDate) : undefined); setEditEnd(project.endDate ? parseISO(project.endDate) : undefined); setEditSpentCost(String(project.spentCost)); setEditNetProfit(String(project.netProfitMargin)); setEditProfitExcl(String(project.profitMarginExclEmployee)); }}>
                     <X className="w-3 h-3 mr-1" /> Cancel
                   </Button>
                 </div>
