@@ -33,8 +33,10 @@ export function ProjectCard({ project }: { project: Project }) {
   const [newSkillId, setNewSkillId] = useState('');
   const [newSkillLevel, setNewSkillLevel] = useState('1');
   const [newSkillDuration, setNewSkillDuration] = useState('');
+  const [newSkillCapacity, setNewSkillCapacity] = useState('');
   const [newSkillStart, setNewSkillStart] = useState('');
   const [newSkillEnd, setNewSkillEnd] = useState('');
+  const [capacityError, setCapacityError] = useState('');
   const { isPM } = useAuth();
   const { updateProjectStatus, updateProject, skills: globalSkills, addProjectSkill, removeProjectSkill, updateProjectSkill, employees } = useData();
 
@@ -60,6 +62,11 @@ export function ProjectCard({ project }: { project: Project }) {
 
   const handleAddSkill = () => {
     if (!newSkillAllFilled) return;
+    const cap = Number(newSkillCapacity);
+    if (Number.isNaN(cap) || cap < 0 || cap > 1) {
+      setCapacityError('Capacity on project must be between 0 and 1');
+      return;
+    }
     const skill = globalSkills.find(s => s.id === newSkillId);
     if (!skill) return;
     addProjectSkill(project.id, {
@@ -67,6 +74,7 @@ export function ProjectCard({ project }: { project: Project }) {
       skillName: skill.name,
       level: Number(newSkillLevel),
       duration: Number(newSkillDuration),
+      capacityOnProject: cap,
       startDate: newSkillStart,
       endDate: newSkillEnd,
       assignedEmployeeId: null,
@@ -76,8 +84,10 @@ export function ProjectCard({ project }: { project: Project }) {
     setNewSkillId('');
     setNewSkillLevel('1');
     setNewSkillDuration('');
+    setNewSkillCapacity('');
     setNewSkillStart('');
     setNewSkillEnd('');
+    setCapacityError('');
     setAddingSkill(false);
   };
 
