@@ -7,7 +7,7 @@ interface DataContextType {
   employees: Employee[];
   addProject: (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => void;
   updateProjectStatus: (projectId: string, status: ProjectStatus) => void;
-  updateProject: (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee'>>) => void;
+  updateProject: (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee' | 'fixedCost' | 'revenue' | 'status'>>) => void;
   addProjectSkill: (projectId: string, skill: Omit<ProjectSkill, 'id'>) => void;
   removeProjectSkill: (projectId: string, skillRowId: string) => void;
   updateProjectSkill: (projectId: string, skillRowId: string, updates: Partial<ProjectSkill>) => void;
@@ -39,7 +39,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status } : p));
   };
 
-  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee'>>) => {
+  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee' | 'fixedCost' | 'revenue' | 'status'>>) => {
     setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
   };
 
