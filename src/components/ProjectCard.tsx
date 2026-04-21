@@ -40,13 +40,13 @@ export function ProjectCard({ project }: { project: Project }) {
   const { isPM } = useAuth();
   const { updateProjectStatus, updateProject, skills: globalSkills, addProjectSkill, removeProjectSkill, updateProjectSkill, employees } = useData();
 
-  const statuses: ProjectStatus[] = ['Planned', 'Ongoing', 'Canceled', 'Finished'];
+  const statuses: ProjectStatus[] = ['Planned', 'Ongoing', 'Completed', 'Cancelled', 'On Hold'];
 
   const skillCapacity = project.skills.reduce((sum, s) => sum + s.duration, 0);
   const hasAssignedSkills = project.skills.some(s => s.assignedEmployeeId);
   const showPersonColumn = !(project.status === 'Planned' && !hasAssignedSkills);
 
-  const newSkillAllFilled = newSkillId && newSkillLevel && newSkillDuration && newSkillStart && newSkillEnd;
+  const newSkillAllFilled = newSkillId && newSkillLevel && newSkillDuration && newSkillStart && newSkillEnd && newSkillCapacity !== '';
 
   const handleSaveEdit = () => {
     updateProject(project.id, {
