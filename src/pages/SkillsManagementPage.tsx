@@ -7,17 +7,17 @@ import { Search, Plus, Pencil, Trash2, X, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skill } from '@/data/mockData';
 
-const CATEGORIES = ['Frontend', 'Backend', 'Database', 'DevOps', 'Design'];
+const CATEGORIES = ['Frontend', 'Backend', 'Database', 'DevOps', 'Design', 'Management'];
 
 export default function SkillsManagementPage() {
-  const { skills, addSkill, deleteSkill, updateSkill, getSkillUsageCount } = useData();
+  const { skills, addSkill, deleteSkill, updateSkill } = useData();
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showAdd, setShowAdd] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const [newSkill, setNewSkill] = useState({ name: '', category: 'Frontend', description: '' });
-  const [editForm, setEditForm] = useState<Skill>({ id: '', name: '', category: '', description: '' });
+  const [newSkill, setNewSkill] = useState({ name: '', category: 'Frontend' });
+  const [editForm, setEditForm] = useState<Skill>({ id: '', name: '', category: '' });
 
   let filtered = skills;
   if (search) {
@@ -28,31 +28,30 @@ export default function SkillsManagementPage() {
     filtered = filtered.filter(s => s.category === categoryFilter);
   }
 
-  // Summary KPIs
   const categoryCount: Record<string, number> = {};
   skills.forEach(s => { categoryCount[s.category] = (categoryCount[s.category] || 0) + 1; });
 
   const handleAdd = () => {
-    if (!newSkill.name) return;
-    addSkill(newSkill);
-    setNewSkill({ name: '', category: 'Frontend', description: '' });
+    if (!newSkill.name.trim()) return;
+    addSkill({ name: newSkill.name.trim(), category: newSkill.category });
+    setNewSkill({ name: '', category: 'Frontend' });
     setShowAdd(false);
   };
 
   const startEdit = (skill: Skill) => {
     setEditingId(skill.id);
-    setEditForm({ ...skill });
+    setEditForm({ id: skill.id, name: skill.name, category: skill.category });
   };
 
   const saveEdit = () => {
-    updateSkill(editForm);
+    updateSkill({ id: editForm.id, name: editForm.name, category: editForm.category });
     setEditingId(null);
   };
 
   return (
     <div>
       {/* Summary KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-3 mb-6">
         {CATEGORIES.map(cat => (
           <div key={cat} className="bg-card border border-border rounded-lg p-3 text-center">
             <p className="text-lg font-semibold text-foreground">{categoryCount[cat] || 0}</p>
@@ -84,7 +83,7 @@ export default function SkillsManagementPage() {
       {/* Add form */}
       {showAdd && (
         <div className="bg-card border border-border rounded-lg p-4 mb-4 animate-fade-in">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div>
               <Label className="text-xs text-muted-foreground">Name</Label>
               <Input value={newSkill.name} onChange={e => setNewSkill(p => ({ ...p, name: e.target.value }))} className="bg-background h-8" />
@@ -94,10 +93,6 @@ export default function SkillsManagementPage() {
               <select value={newSkill.category} onChange={e => setNewSkill(p => ({ ...p, category: e.target.value }))} className="w-full h-8 px-2 rounded-md border border-border bg-background text-sm text-foreground">
                 {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
-            </div>
-            <div>
-              <Label className="text-xs text-muted-foreground">Description</Label>
-              <Input value={newSkill.description} onChange={e => setNewSkill(p => ({ ...p, description: e.target.value }))} className="bg-background h-8" />
             </div>
           </div>
           <div className="flex gap-2 mt-3">
@@ -110,40 +105,33 @@ export default function SkillsManagementPage() {
       {/* List header */}
       <div className="flex items-center gap-3 px-4 py-2 text-xs text-muted-foreground font-semibold uppercase tracking-wider border-b border-border mb-1">
         <span className="flex-1">Name</span>
-        <span className="w-24 text-center">Category</span>
-        <span className="flex-1">Description</span>
+        <span className="w-32 text-center">Category</span>
         <span className="w-16"></span>
       </div>
 
       {/* Skills list */}
       <div className="space-y-1">
-        {filtered.map(skill => {
-          return (
-            <div key={skill.id} className="flex items-center gap-3 px-4 py-2.5 bg-card border border-border rounded-md hover:border-primary/30 transition-colors">
-              {editingId === skill.id ? (
-                <>
-                  <Input value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} className="bg-background h-7 text-sm flex-1" />
-                  <select value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))} className="h-7 px-2 rounded border border-border bg-background text-xs text-foreground">
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  <Input value={editForm.description} onChange={e => setEditForm(p => ({ ...p, description: e.target.value }))} className="bg-background h-7 text-sm flex-1" />
-                  <span className="w-20"></span>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={saveEdit}><Check className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => setEditingId(null)}><X className="w-3.5 h-3.5" /></Button>
-                </>
-              ) : (
-                <>
-                  <span className="text-sm font-medium text-foreground flex-1">{skill.name}</span>
-                  <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded w-24 text-center">{skill.category}</span>
-                  <span className="text-xs text-muted-foreground flex-1">{skill.description}</span>
-                  
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(skill)}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSkill(skill.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
-                </>
-              )}
-            </div>
-          );
-        })}
+        {filtered.map(skill => (
+          <div key={skill.id} className="flex items-center gap-3 px-4 py-2.5 bg-card border border-border rounded-md hover:border-primary/30 transition-colors">
+            {editingId === skill.id ? (
+              <>
+                <Input value={editForm.name} onChange={e => setEditForm(p => ({ ...p, name: e.target.value }))} className="bg-background h-7 text-sm flex-1" />
+                <select value={editForm.category} onChange={e => setEditForm(p => ({ ...p, category: e.target.value }))} className="h-7 px-2 rounded border border-border bg-background text-xs text-foreground w-32">
+                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={saveEdit}><Check className="w-3.5 h-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={() => setEditingId(null)}><X className="w-3.5 h-3.5" /></Button>
+              </>
+            ) : (
+              <>
+                <span className="text-sm font-medium text-foreground flex-1">{skill.name}</span>
+                <span className="text-xs font-mono text-primary bg-primary/10 px-2 py-0.5 rounded w-32 text-center">{skill.category}</span>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground" onClick={() => startEdit(skill)}><Pencil className="w-3.5 h-3.5" /></Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => deleteSkill(skill.id)}><Trash2 className="w-3.5 h-3.5" /></Button>
+              </>
+            )}
+          </div>
+        ))}
       </div>
 
       {filtered.length === 0 && (
