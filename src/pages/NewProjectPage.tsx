@@ -246,11 +246,11 @@ export default function NewProjectPage() {
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Start</Label>
-              <Input value={createdProject.startDate} readOnly className="bg-muted font-mono" />
+              <Input value={createdProject.startDate.replace(/-/g, '.')} readOnly className="bg-muted font-mono" />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">End</Label>
-              <Input value={createdProject.endDate} readOnly className="bg-muted font-mono" />
+              <Input value={createdProject.endDate.replace(/-/g, '.')} readOnly className="bg-muted font-mono" />
             </div>
             <div>
               <Label className="text-xs text-muted-foreground">Capacity on project (0–1) *</Label>
