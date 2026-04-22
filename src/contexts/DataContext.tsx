@@ -98,23 +98,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const removeEmployeeSkillM = useRemoveEmployeeSkill();
 
   const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
-    // Pre-generate the ID so the caller (NewProjectPage step 1 → step 2) can use
-    // it synchronously to seed the mandatory PM skill assignment.
+    // Pre-generate the ID so the caller (NewProjectPage step 1 → step 2) can
+    // immediately seed the mandatory PM skill assignment without waiting for
+    // the mutation to resolve. The API accepts an optional `id` and will use
+    // it instead of generating its own, keeping client and server in sync.
     const id = `p${Date.now()}`;
-    createProject.mutate({
-      ...project,
-      // Override the API's generated ID with ours so step 2 can target the
-      // correct project as soon as the mutation lands.
-    } as Parameters<typeof createProject.mutate>[0]);
-    // The mock API ignores any pre-set id and creates its own — but since both
-    // use the same `p${Date.now()}` pattern within the same tick, they match
-    // closely enough for the 2-step flow. To be safe we override deterministically:
+    createProject.mutate({ ...project, id });
     return id;
   };
 
   const addEmployee = (employee: Omit<Employee, 'id' | 'skills' | 'plannedCapacity' | 'allocatedCapacity' | 'totalCapacity'>) => {
     const id = `e${Date.now()}`;
-    createEmployee.mutate(employee);
+    createEmployee.mutate({ ...employee, id });
     return id;
   };
 
