@@ -11,6 +11,9 @@ interface DataContextType {
   addProjectSkill: (projectId: string, skill: Omit<ProjectSkill, 'id'>) => void;
   removeProjectSkill: (projectId: string, skillRowId: string) => void;
   updateProjectSkill: (projectId: string, skillRowId: string, updates: Partial<ProjectSkill>) => void;
+  reorderProjectSkills: (projectId: string, orderedSkillRowIds: string[]) => void;
+  autoAssignSkill: (projectId: string, skillRowId: string, preference: 'cost' | 'capacity') => void;
+  autoAssignAllEmptySkills: (projectId: string, preference: 'cost' | 'capacity') => void;
   addSkill: (skill: Omit<Skill, 'id'>) => void;
   deleteSkill: (skillId: string) => void;
   updateSkill: (skill: Skill) => void;
