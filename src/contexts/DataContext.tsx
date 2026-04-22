@@ -184,6 +184,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       projects, skills, employees,
       addProject, updateProjectStatus, updateProject,
       addProjectSkill, removeProjectSkill, updateProjectSkill,
+      reorderProjectSkills, autoAssignSkill, autoAssignAllEmptySkills,
       addSkill, deleteSkill, updateSkill, getSkillUsageCount,
       addEmployee, addEmployeeSkill, removeEmployeeSkill,
     }}>
