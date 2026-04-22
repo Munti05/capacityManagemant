@@ -11,6 +11,9 @@ interface DataContextType {
   addProjectSkill: (projectId: string, skill: Omit<ProjectSkill, 'id'>) => void;
   removeProjectSkill: (projectId: string, skillRowId: string) => void;
   updateProjectSkill: (projectId: string, skillRowId: string, updates: Partial<ProjectSkill>) => void;
+  reorderProjectSkills: (projectId: string, orderedSkillRowIds: string[]) => void;
+  autoAssignSkill: (projectId: string, skillRowId: string, preference: 'cost' | 'capacity') => void;
+  autoAssignAllEmptySkills: (projectId: string, preference: 'cost' | 'capacity') => void;
   addSkill: (skill: Omit<Skill, 'id'>) => void;
   deleteSkill: (skillId: string) => void;
   updateSkill: (skill: Skill) => void;
@@ -69,6 +72,65 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const reorderProjectSkills = (projectId: string, orderedSkillRowIds: string[]) => {
+    setProjects(prev => prev.map(p => {
+      if (p.id !== projectId) return p;
+      const byId = new Map(p.skills.map(s => [s.id, s]));
+      const reordered = orderedSkillRowIds.map(id => byId.get(id)).filter(Boolean) as ProjectSkill[];
+      // append any skills not in orderedSkillRowIds (safety)
+      const seen = new Set(orderedSkillRowIds);
+      const rest = p.skills.filter(s => !seen.has(s.id));
+      return { ...p, skills: [...reordered, ...rest] };
+    }));
+  };
+
+  const pickBestEmployee = (
+    project: Project,
+    skill: ProjectSkill,
+    preference: 'cost' | 'capacity',
+  ): Employee | null => {
+    const candidates = employees.filter(e =>
+      e.skills.some(s => s.skillId === skill.skillId && s.level >= skill.level)
+    );
+    if (candidates.length === 0) return null;
+    const sorted = [...candidates].sort((a, b) => {
+      if (preference === 'cost') {
+        return (a.hourlyRate ?? Infinity) - (b.hourlyRate ?? Infinity);
+      }
+      const aFree = a.totalCapacity - a.allocatedCapacity - a.plannedCapacity;
+      const bFree = b.totalCapacity - b.allocatedCapacity - b.plannedCapacity;
+      return bFree - aFree;
+    });
+    return sorted[0] ?? null;
+  };
+
+  const autoAssignSkill = (projectId: string, skillRowId: string, preference: 'cost' | 'capacity') => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    const skill = project.skills.find(s => s.id === skillRowId);
+    if (!skill || skill.fixed || skill.assignedEmployeeId) return;
+    const best = pickBestEmployee(project, skill, preference);
+    if (!best) return;
+    updateProjectSkill(projectId, skillRowId, {
+      assignedEmployeeId: best.id,
+      assignedEmployeeName: best.name,
+    });
+  };
+
+  const autoAssignAllEmptySkills = (projectId: string, preference: 'cost' | 'capacity') => {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    project.skills.forEach(skill => {
+      if (skill.fixed || skill.assignedEmployeeId) return;
+      const best = pickBestEmployee(project, skill, preference);
+      if (!best) return;
+      updateProjectSkill(projectId, skill.id, {
+        assignedEmployeeId: best.id,
+        assignedEmployeeName: best.name,
+      });
+    });
+  };
+
   const addSkill = (skill: Omit<Skill, 'id'>) => {
     setSkills(prev => [...prev, { ...skill, id: `s${Date.now()}` }]);
   };
@@ -122,6 +184,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       projects, skills, employees,
       addProject, updateProjectStatus, updateProject,
       addProjectSkill, removeProjectSkill, updateProjectSkill,
+      reorderProjectSkills, autoAssignSkill, autoAssignAllEmptySkills,
       addSkill, deleteSkill, updateSkill, getSkillUsageCount,
       addEmployee, addEmployeeSkill, removeEmployeeSkill,
     }}>
