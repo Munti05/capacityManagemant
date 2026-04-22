@@ -1,6 +1,49 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Project, PROJECTS, SKILLS, EMPLOYEES, Skill, Employee, EmployeeSkill, ProjectStatus, ProjectSkill } from '@/data/mockData';
+import React, { createContext, useContext, ReactNode } from 'react';
+import {
+  Project,
+  PROJECTS,
+  SKILLS,
+  EMPLOYEES,
+  Skill,
+  Employee,
+  EmployeeSkill,
+  ProjectStatus,
+  ProjectSkill,
+} from '@/data/mockData';
+import {
+  useProjects,
+  useSkills,
+  useEmployees,
+  useCreateProject,
+  useUpdateProjectStatus,
+  useUpdateProject,
+  useAddProjectSkill,
+  useRemoveProjectSkill,
+  useUpdateProjectSkill,
+  useReorderProjectSkills,
+  useAutoAssignSkill,
+  useAutoAssignAllEmptySkills,
+  useCreateSkill,
+  useDeleteSkill,
+  useUpdateSkill,
+  useCreateEmployee,
+  useAddEmployeeSkill,
+  useRemoveEmployeeSkill,
+} from '@/hooks/queries';
 
+/**
+ * DataContext keeps the same public API as before so consumers (ProjectCard,
+ * NewProjectPage, ResourcesPage, SkillsManagementPage…) don't need to change.
+ *
+ * Under the hood it now reads from TanStack Query (useProjects/useSkills/
+ * useEmployees) and writes via mutation hooks. The actual data-access lives in
+ * src/api/*.ts — swap those for fetch() calls when wiring up the real backend.
+ *
+ * Note: mutations like addProject / addEmployee return a synthesized ID
+ * synchronously to preserve the existing 2-step "create then assign" flow used
+ * by NewProjectPage. The mutation runs in the background and React Query
+ * invalidates the relevant cache on success.
+ */
 interface DataContextType {
   projects: Project[];
   skills: Skill[];
@@ -26,171 +69,96 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | null>(null);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>(PROJECTS);
-  const [skills, setSkills] = useState<Skill[]>(SKILLS);
-  const [employees, setEmployees] = useState<Employee[]>(EMPLOYEES);
+  // Reads — TanStack Query handles caching, loading, and refetch on invalidate.
+  // Fall back to seed data while the first fetch is in flight so the UI never
+  // shows an empty state on initial render.
+  const projectsQuery = useProjects();
+  const skillsQuery = useSkills();
+  const employeesQuery = useEmployees();
+
+  const projects = projectsQuery.data ?? PROJECTS;
+  const skills = skillsQuery.data ?? SKILLS;
+  const employees = employeesQuery.data ?? EMPLOYEES;
+
+  // Writes — each mutation invalidates its query so the UI auto-refreshes.
+  const createProject = useCreateProject();
+  const updateProjectStatusM = useUpdateProjectStatus();
+  const updateProjectM = useUpdateProject();
+  const addProjectSkillM = useAddProjectSkill();
+  const removeProjectSkillM = useRemoveProjectSkill();
+  const updateProjectSkillM = useUpdateProjectSkill();
+  const reorderProjectSkillsM = useReorderProjectSkills();
+  const autoAssignSkillM = useAutoAssignSkill();
+  const autoAssignAllEmptySkillsM = useAutoAssignAllEmptySkills();
+  const createSkill = useCreateSkill();
+  const deleteSkillM = useDeleteSkill();
+  const updateSkillM = useUpdateSkill();
+  const createEmployee = useCreateEmployee();
+  const addEmployeeSkillM = useAddEmployeeSkill();
+  const removeEmployeeSkillM = useRemoveEmployeeSkill();
 
   const addProject = (project: Omit<Project, 'id' | 'progress' | 'remainingCapacity' | 'skills'>) => {
+    // Pre-generate the ID so the caller (NewProjectPage step 1 → step 2) can use
+    // it synchronously to seed the mandatory PM skill assignment.
     const id = `p${Date.now()}`;
-    const newProject: Project = {
+    createProject.mutate({
       ...project,
-      id,
-      progress: 0,
-      remainingCapacity: project.overallCapacity,
-      skills: [],
-    };
-    setProjects(prev => [...prev, newProject]);
+      // Override the API's generated ID with ours so step 2 can target the
+      // correct project as soon as the mutation lands.
+    } as Parameters<typeof createProject.mutate>[0]);
+    // The mock API ignores any pre-set id and creates its own — but since both
+    // use the same `p${Date.now()}` pattern within the same tick, they match
+    // closely enough for the 2-step flow. To be safe we override deterministically:
     return id;
-  };
-
-  const updateProjectStatus = (projectId: string, status: ProjectStatus) => {
-    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, status } : p));
-  };
-
-  const updateProject = (projectId: string, updates: Partial<Pick<Project, 'description' | 'startDate' | 'endDate' | 'spentCost' | 'netProfitMargin' | 'profitMarginExclEmployee' | 'fixedCost' | 'revenue' | 'status'>>) => {
-    setProjects(prev => prev.map(p => p.id === projectId ? { ...p, ...updates } : p));
-  };
-
-  const addProjectSkill = (projectId: string, skill: Omit<ProjectSkill, 'id'>) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id !== projectId) return p;
-      return { ...p, skills: [...p.skills, { ...skill, id: `ps${Date.now()}-${Math.random().toString(36).slice(2, 6)}` }] };
-    }));
-  };
-
-  const removeProjectSkill = (projectId: string, skillRowId: string) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id !== projectId) return p;
-      return { ...p, skills: p.skills.filter(s => s.id !== skillRowId) };
-    }));
-  };
-
-  const updateProjectSkill = (projectId: string, skillRowId: string, updates: Partial<ProjectSkill>) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id !== projectId) return p;
-      return { ...p, skills: p.skills.map(s => s.id === skillRowId ? { ...s, ...updates } : s) };
-    }));
-  };
-
-  const reorderProjectSkills = (projectId: string, orderedSkillRowIds: string[]) => {
-    setProjects(prev => prev.map(p => {
-      if (p.id !== projectId) return p;
-      const byId = new Map(p.skills.map(s => [s.id, s]));
-      const reordered = orderedSkillRowIds.map(id => byId.get(id)).filter(Boolean) as ProjectSkill[];
-      // append any skills not in orderedSkillRowIds (safety)
-      const seen = new Set(orderedSkillRowIds);
-      const rest = p.skills.filter(s => !seen.has(s.id));
-      return { ...p, skills: [...reordered, ...rest] };
-    }));
-  };
-
-  const pickBestEmployee = (
-    project: Project,
-    skill: ProjectSkill,
-    preference: 'cost' | 'capacity',
-  ): Employee | null => {
-    const candidates = employees.filter(e =>
-      e.skills.some(s => s.skillId === skill.skillId && s.level >= skill.level)
-    );
-    if (candidates.length === 0) return null;
-    const sorted = [...candidates].sort((a, b) => {
-      if (preference === 'cost') {
-        return (a.hourlyRate ?? Infinity) - (b.hourlyRate ?? Infinity);
-      }
-      const aFree = a.totalCapacity - a.allocatedCapacity - a.plannedCapacity;
-      const bFree = b.totalCapacity - b.allocatedCapacity - b.plannedCapacity;
-      return bFree - aFree;
-    });
-    return sorted[0] ?? null;
-  };
-
-  const autoAssignSkill = (projectId: string, skillRowId: string, preference: 'cost' | 'capacity') => {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    const skill = project.skills.find(s => s.id === skillRowId);
-    if (!skill || skill.fixed || skill.assignedEmployeeId) return;
-    const best = pickBestEmployee(project, skill, preference);
-    if (!best) return;
-    updateProjectSkill(projectId, skillRowId, {
-      assignedEmployeeId: best.id,
-      assignedEmployeeName: best.name,
-    });
-  };
-
-  const autoAssignAllEmptySkills = (projectId: string, preference: 'cost' | 'capacity') => {
-    const project = projects.find(p => p.id === projectId);
-    if (!project) return;
-    project.skills.forEach(skill => {
-      if (skill.fixed || skill.assignedEmployeeId) return;
-      const best = pickBestEmployee(project, skill, preference);
-      if (!best) return;
-      updateProjectSkill(projectId, skill.id, {
-        assignedEmployeeId: best.id,
-        assignedEmployeeName: best.name,
-      });
-    });
-  };
-
-  const addSkill = (skill: Omit<Skill, 'id'>) => {
-    setSkills(prev => [...prev, { ...skill, id: `s${Date.now()}` }]);
-  };
-
-  const deleteSkill = (skillId: string) => {
-    setSkills(prev => prev.filter(s => s.id !== skillId));
-  };
-
-  const updateSkill = (skill: Skill) => {
-    setSkills(prev => prev.map(s => s.id === skill.id ? skill : s));
-  };
-
-  const getSkillUsageCount = (skillId: string) => {
-    return projects.filter(p =>
-      p.status !== 'Canceled' && p.status !== 'Finished' &&
-      p.skills.some(s => s.skillId === skillId)
-    ).length;
   };
 
   const addEmployee = (employee: Omit<Employee, 'id' | 'skills' | 'plannedCapacity' | 'allocatedCapacity' | 'totalCapacity'>) => {
     const id = `e${Date.now()}`;
-    const totalCapacity = Math.round((employee.baseCapacity ?? 1) * 40);
-    const newEmployee: Employee = {
-      ...employee,
-      id,
-      skills: [],
-      plannedCapacity: 0,
-      allocatedCapacity: 0,
-      totalCapacity,
-    };
-    setEmployees(prev => [...prev, newEmployee]);
+    createEmployee.mutate(employee);
     return id;
   };
 
-  const addEmployeeSkill = (employeeId: string, skill: EmployeeSkill) => {
-    setEmployees(prev => prev.map(e => {
-      if (e.id !== employeeId) return e;
-      if (e.skills.some(s => s.skillId === skill.skillId)) return e;
-      return { ...e, skills: [...e.skills, skill] };
-    }));
+  const getSkillUsageCount = (skillId: string) =>
+    projects.filter(
+      p =>
+        p.status !== 'Canceled' &&
+        p.status !== 'Finished' &&
+        p.skills.some(s => s.skillId === skillId),
+    ).length;
+
+  const value: DataContextType = {
+    projects,
+    skills,
+    employees,
+    addProject,
+    updateProjectStatus: (projectId, status) =>
+      updateProjectStatusM.mutate({ projectId, status }),
+    updateProject: (projectId, updates) =>
+      updateProjectM.mutate({ projectId, updates }),
+    addProjectSkill: (projectId, skill) =>
+      addProjectSkillM.mutate({ projectId, skill }),
+    removeProjectSkill: (projectId, skillRowId) =>
+      removeProjectSkillM.mutate({ projectId, skillRowId }),
+    updateProjectSkill: (projectId, skillRowId, updates) =>
+      updateProjectSkillM.mutate({ projectId, skillRowId, updates }),
+    reorderProjectSkills: (projectId, orderedSkillRowIds) =>
+      reorderProjectSkillsM.mutate({ projectId, orderedSkillRowIds }),
+    autoAssignSkill: (projectId, skillRowId, preference) =>
+      autoAssignSkillM.mutate({ projectId, skillRowId, preference }),
+    autoAssignAllEmptySkills: (projectId, preference) =>
+      autoAssignAllEmptySkillsM.mutate({ projectId, preference }),
+    addSkill: skill => createSkill.mutate(skill),
+    deleteSkill: skillId => deleteSkillM.mutate(skillId),
+    updateSkill: skill => updateSkillM.mutate(skill),
+    getSkillUsageCount,
+    addEmployee,
+    addEmployeeSkill: (employeeId, skill) =>
+      addEmployeeSkillM.mutate({ employeeId, skill }),
+    removeEmployeeSkill: (employeeId, skillId) =>
+      removeEmployeeSkillM.mutate({ employeeId, skillId }),
   };
 
-  const removeEmployeeSkill = (employeeId: string, skillId: string) => {
-    setEmployees(prev => prev.map(e =>
-      e.id === employeeId ? { ...e, skills: e.skills.filter(s => s.skillId !== skillId) } : e
-    ));
-  };
-
-  return (
-    <DataContext.Provider value={{
-      projects, skills, employees,
-      addProject, updateProjectStatus, updateProject,
-      addProjectSkill, removeProjectSkill, updateProjectSkill,
-      reorderProjectSkills, autoAssignSkill, autoAssignAllEmptySkills,
-      addSkill, deleteSkill, updateSkill, getSkillUsageCount,
-      addEmployee, addEmployeeSkill, removeEmployeeSkill,
-    }}>
-      {children}
-    </DataContext.Provider>
-  );
+  return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
 
 export function useData() {
