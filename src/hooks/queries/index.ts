@@ -30,7 +30,8 @@ export function useProjects() {
 export function useCreateProject() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: projectsApi.createProject,
+    mutationFn: (input: Parameters<typeof projectsApi.createProject>[0]) =>
+      projectsApi.createProject(input),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.projects }),
   });
 }
@@ -150,7 +151,8 @@ export function useEmployees() {
 export function useCreateEmployee() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: employeesApi.NewEmployeeInput) => employeesApi.createEmployee(input),
+    mutationFn: (input: Parameters<typeof employeesApi.createEmployee>[0]) =>
+      employeesApi.createEmployee(input),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.employees }),
   });
 }
