@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Project, ProjectStatus, ProjectSkill } from '@/data/mockData';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ProgressBar } from '@/components/ProgressBar';
-import { ChevronDown, ChevronUp, User, Pencil, Check, X, Plus, Trash2, Lock, Unlock, Calculator } from 'lucide-react';
+import { ChevronDown, ChevronUp, User, Pencil, Check, X, Plus, Trash2, Lock, Unlock, Calculator, GripVertical } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,10 +15,29 @@ import { Calendar } from '@/components/ui/calendar';
 import { format, parseISO } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat('hu-HU').format(value) + ' HUF';
 }
+
+type AssignPreference = 'cost' | 'capacity';
 
 export function ProjectCard({ project }: { project: Project }) {
   const [expanded, setExpanded] = useState(false);
@@ -26,36 +45,56 @@ export function ProjectCard({ project }: { project: Project }) {
   const [editDesc, setEditDesc] = useState(project.description);
   const [editStart, setEditStart] = useState<Date | undefined>(project.startDate ? parseISO(project.startDate) : undefined);
   const [editEnd, setEditEnd] = useState<Date | undefined>(project.endDate ? parseISO(project.endDate) : undefined);
-  const [editSpentCost, setEditSpentCost] = useState(String(project.spentCost));
-  const [editNetProfit, setEditNetProfit] = useState(String(project.netProfitMargin));
-  const [editProfitExcl, setEditProfitExcl] = useState(String(project.profitMarginExclEmployee));
+  const [editFixedCost, setEditFixedCost] = useState(String(project.fixedCost ?? ''));
+  const [editRevenue, setEditRevenue] = useState(String(project.revenue ?? ''));
   const [addingSkill, setAddingSkill] = useState(false);
   const [newSkillId, setNewSkillId] = useState('');
   const [newSkillLevel, setNewSkillLevel] = useState('1');
-  const [newSkillDuration, setNewSkillDuration] = useState('');
   const [newSkillCapacity, setNewSkillCapacity] = useState('');
   const [newSkillStart, setNewSkillStart] = useState('');
   const [newSkillEnd, setNewSkillEnd] = useState('');
   const [capacityError, setCapacityError] = useState('');
+  // Preference selectors for auto-assignment
+  const [bulkPreference, setBulkPreference] = useState<AssignPreference | ''>('');
+  const [rowPreference, setRowPreference] = useState<Record<string, AssignPreference>>({});
   const { isPM } = useAuth();
-  const { updateProjectStatus, updateProject, skills: globalSkills, addProjectSkill, removeProjectSkill, updateProjectSkill, employees } = useData();
+  const {
+    updateProjectStatus, updateProject, skills: globalSkills,
+    addProjectSkill, removeProjectSkill, updateProjectSkill,
+    reorderProjectSkills, autoAssignSkill, autoAssignAllEmptySkills,
+    employees,
+  } = useData();
 
   const statuses: ProjectStatus[] = ['Planned', 'Ongoing', 'Completed', 'Cancelled', 'On Hold'];
 
-  const skillCapacity = project.skills.reduce((sum, s) => sum + s.duration, 0);
   const hasAssignedSkills = project.skills.some(s => s.assignedEmployeeId);
   const showPersonColumn = !(project.status === 'Planned' && !hasAssignedSkills);
 
-  const newSkillAllFilled = newSkillId && newSkillLevel && newSkillDuration && newSkillStart && newSkillEnd && newSkillCapacity !== '';
+  const newSkillAllFilled = newSkillId && newSkillLevel && newSkillStart && newSkillEnd && newSkillCapacity !== '';
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const ids = project.skills.map(s => s.id);
+    const oldIndex = ids.indexOf(String(active.id));
+    const newIndex = ids.indexOf(String(over.id));
+    if (oldIndex < 0 || newIndex < 0) return;
+    const reordered = arrayMove(ids, oldIndex, newIndex);
+    reorderProjectSkills(project.id, reordered);
+  };
 
   const handleSaveEdit = () => {
     updateProject(project.id, {
       description: editDesc,
       startDate: editStart ? format(editStart, 'yyyy-MM-dd') : project.startDate,
       endDate: editEnd ? format(editEnd, 'yyyy-MM-dd') : project.endDate,
-      spentCost: Number(editSpentCost) || 0,
-      netProfitMargin: Number(editNetProfit) || 0,
-      profitMarginExclEmployee: Number(editProfitExcl) || 0,
+      fixedCost: editFixedCost === '' ? undefined : Number(editFixedCost),
+      revenue: editRevenue === '' ? undefined : Number(editRevenue),
     });
     setEditing(false);
   };
@@ -73,7 +112,7 @@ export function ProjectCard({ project }: { project: Project }) {
       skillId: skill.id,
       skillName: skill.name,
       level: Number(newSkillLevel),
-      duration: Number(newSkillDuration),
+      duration: Math.max(1, Math.round(cap * 20)), // legacy compat
       capacityOnProject: cap,
       startDate: newSkillStart,
       endDate: newSkillEnd,
@@ -83,7 +122,6 @@ export function ProjectCard({ project }: { project: Project }) {
     });
     setNewSkillId('');
     setNewSkillLevel('1');
-    setNewSkillDuration('');
     setNewSkillCapacity('');
     setNewSkillStart('');
     setNewSkillEnd('');
@@ -100,28 +138,15 @@ export function ProjectCard({ project }: { project: Project }) {
     return 'available';
   };
 
-  const calculateSuggestions = () => {
-    project.skills.forEach(skill => {
-      if (skill.fixed) return;
-      const candidates = employees
-        .filter(e => e.skills.some(s => s.skillId === skill.skillId && s.level >= skill.level))
-        .sort((a, b) => {
-          const aAvail = a.totalCapacity - a.allocatedCapacity - a.plannedCapacity;
-          const bAvail = b.totalCapacity - b.allocatedCapacity - b.plannedCapacity;
-          return bAvail - aAvail;
-        });
-      if (candidates.length > 0) {
-        updateProjectSkill(project.id, skill.id, {
-          assignedEmployeeId: candidates[0].id,
-          assignedEmployeeName: candidates[0].name,
-        });
-      }
-    });
-  };
+  const isSkillRowComplete = (skill: ProjectSkill) =>
+    Boolean(skill.skillId && skill.level && skill.startDate && skill.endDate && typeof skill.capacityOnProject === 'number');
 
-  const isSkillRowComplete = (skill: ProjectSkill) => {
-    return skill.skillId && skill.level && skill.duration && skill.startDate && skill.endDate;
-  };
+  const emptySkillCount = project.skills.filter(s => !s.assignedEmployeeId && !s.fixed).length;
+
+  // Grid columns: Drag | Skill | Level | Interval | Cap. on proj. | (Assigned) | Actions
+  const gridCols = showPersonColumn
+    ? '24px 1fr 50px 1fr 110px 1fr 90px'
+    : '24px 1fr 50px 1fr 110px 90px';
 
   return (
     <div className="border border-border rounded-lg bg-card transition-all duration-200 hover:border-primary/30">
@@ -134,14 +159,9 @@ export function ProjectCard({ project }: { project: Project }) {
         </span>
         <span className="text-sm font-medium text-foreground truncate flex-1">{project.name}</span>
         <StatusBadge status={project.status} />
-        {/* PM intentionally hidden in summary view — managed via skills */}
         <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
         <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
         <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
-        <span className="text-xs text-muted-foreground font-mono hidden md:inline border-l border-border pl-3">
-          {project.overallCapacity}d
-          {project.skills.length > 0 && <span className="text-primary ml-1">({skillCapacity}d)</span>}
-        </span>
         {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
       </button>
 
@@ -169,7 +189,14 @@ export function ProjectCard({ project }: { project: Project }) {
                   <Button variant="default" size="sm" className="h-7 text-xs" onClick={handleSaveEdit}>
                     <Check className="w-3 h-3 mr-1" /> Save
                   </Button>
-                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => { setEditing(false); setEditDesc(project.description); setEditStart(project.startDate ? parseISO(project.startDate) : undefined); setEditEnd(project.endDate ? parseISO(project.endDate) : undefined); setEditSpentCost(String(project.spentCost)); setEditNetProfit(String(project.netProfitMargin)); setEditProfitExcl(String(project.profitMarginExclEmployee)); }}>
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
+                    setEditing(false);
+                    setEditDesc(project.description);
+                    setEditStart(project.startDate ? parseISO(project.startDate) : undefined);
+                    setEditEnd(project.endDate ? parseISO(project.endDate) : undefined);
+                    setEditFixedCost(String(project.fixedCost ?? ''));
+                    setEditRevenue(String(project.revenue ?? ''));
+                  }}>
                     <X className="w-3 h-3 mr-1" /> Cancel
                   </Button>
                 </div>
@@ -178,9 +205,8 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <DetailItem label="Client" value={project.client} />
             {editing ? (
-              <div>
+              <div className="md:col-span-2 lg:col-span-3">
                 <p className="text-xs text-muted-foreground mb-1">Description</p>
                 <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="bg-background text-sm" rows={2} />
               </div>
@@ -223,55 +249,56 @@ export function ProjectCard({ project }: { project: Project }) {
             ) : (
               <DetailItem label="End Date" value={project.endDate} />
             )}
-            <DetailItem label="Remaining Capacity" value={`${project.remainingCapacity} man-days`} />
-            {typeof project.fixedCost === 'number' && (
-              <DetailItem label="Fixed Cost" value={formatCurrency(project.fixedCost)} />
-            )}
-            {typeof project.revenue === 'number' && (
-              <DetailItem label="Revenue" value={formatCurrency(project.revenue)} />
-            )}
-            <DetailItem label="Estimated Cost" value={formatCurrency(project.estimatedCost)} />
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Spent Cost</p>
-                <Input type="number" value={editSpentCost} onChange={e => setEditSpentCost(e.target.value)} className="bg-background h-8 text-sm" />
+                <p className="text-xs text-muted-foreground mb-1">Fixed Cost (HUF)</p>
+                <Input type="number" value={editFixedCost} onChange={e => setEditFixedCost(e.target.value)} className="bg-background h-8 text-sm" />
               </div>
             ) : (
-              <DetailItem label="Spent Cost" value={formatCurrency(project.spentCost)} />
-            )}
-            <DetailItem label="Estimated Revenue" value={formatCurrency(project.estimatedRevenue)} />
-            {editing ? (
-              <div>
-                <p className="text-xs text-muted-foreground mb-1">Net Profit Margin Est. (%)</p>
-                <Input type="number" step="0.1" value={editNetProfit} onChange={e => setEditNetProfit(e.target.value)} className="bg-background h-8 text-sm" />
-              </div>
-            ) : (
-              <DetailItem label="Net Profit Margin Est." value={`${project.netProfitMargin}%`} />
+              <DetailItem label="Fixed Cost" value={typeof project.fixedCost === 'number' ? formatCurrency(project.fixedCost) : '—'} />
             )}
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Profit Margin Excl. Empl. (%)</p>
-                <Input type="number" step="0.1" value={editProfitExcl} onChange={e => setEditProfitExcl(e.target.value)} className="bg-background h-8 text-sm" />
+                <p className="text-xs text-muted-foreground mb-1">Revenue (HUF)</p>
+                <Input type="number" value={editRevenue} onChange={e => setEditRevenue(e.target.value)} className="bg-background h-8 text-sm" />
               </div>
             ) : (
-              <DetailItem label="Profit Margin Excl. Empl." value={`${project.profitMarginExclEmployee}%`} />
+              <DetailItem label="Revenue" value={typeof project.revenue === 'number' ? formatCurrency(project.revenue) : '—'} />
             )}
           </div>
 
           {/* Skills section */}
           <div className="mt-5">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Required Skills</h4>
-              <div className="flex gap-2">
-                {isPM && (
+              <div className="flex gap-2 items-center flex-wrap">
+                {isPM && emptySkillCount > 0 && (
                   <>
-                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={calculateSuggestions}>
+                    <Select value={bulkPreference} onValueChange={(v) => setBulkPreference(v as AssignPreference)}>
+                      <SelectTrigger className="w-44 h-7 text-xs bg-background">
+                        <SelectValue placeholder="Optimization preference…" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cost">Minimize Cost</SelectItem>
+                        <SelectItem value="capacity">Maximize Capacity</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 text-xs"
+                      disabled={!bulkPreference}
+                      onClick={() => bulkPreference && autoAssignAllEmptySkills(project.id, bulkPreference)}
+                      title={!bulkPreference ? 'Select an optimization preference first' : 'Auto-assign all empty skills'}
+                    >
                       <Calculator className="w-3 h-3 mr-1" /> Calculate
                     </Button>
-                    <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setAddingSkill(!addingSkill)}>
-                      <Plus className="w-3 h-3 mr-1" /> Add Skill
-                    </Button>
                   </>
+                )}
+                {isPM && (
+                  <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setAddingSkill(!addingSkill)}>
+                    <Plus className="w-3 h-3 mr-1" /> Add Skill
+                  </Button>
                 )}
               </div>
             </div>
@@ -279,98 +306,56 @@ export function ProjectCard({ project }: { project: Project }) {
             {/* Skill list header */}
             {project.skills.length > 0 && (
               <div className="grid gap-3 text-xs text-muted-foreground font-medium uppercase tracking-wider px-3 py-1.5 border-b border-border mb-1"
-                style={{ gridTemplateColumns: showPersonColumn ? '1fr 50px 1fr 80px 90px 1fr 70px' : '1fr 50px 1fr 80px 90px 70px' }}>
+                style={{ gridTemplateColumns: gridCols }}>
+                <span></span>
                 <span>Skill</span>
                 <span>Level</span>
                 <span>Interval</span>
-                <span>Effort</span>
                 <span>Cap. on proj.</span>
                 {showPersonColumn && <span>Assigned</span>}
                 <span></span>
               </div>
             )}
 
-            <div className="space-y-1">
-              {project.skills.map((skill) => {
-                const rowComplete = isSkillRowComplete(skill);
-                return (
-                  <div key={skill.id} className="grid gap-3 items-center bg-background rounded-md px-3 py-2 text-sm"
-                    style={{ gridTemplateColumns: showPersonColumn ? '1fr 50px 1fr 80px 90px 1fr 70px' : '1fr 50px 1fr 80px 90px 70px' }}>
-                    <span className="font-medium text-foreground">{skill.skillName}</span>
-                    <Badge variant="outline" className="text-xs font-mono w-fit">Lv.{skill.level}</Badge>
-                    <span className="text-xs text-muted-foreground font-mono">{skill.startDate} – {skill.endDate}</span>
-                    <span className="text-xs text-muted-foreground font-mono">{skill.duration}d</span>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {typeof skill.capacityOnProject === 'number' ? skill.capacityOnProject.toFixed(2) : '—'}
-                    </span>
-                    {showPersonColumn && (
-                      <div>
-                        {isPM ? (
-                          <Select
-                            value={skill.assignedEmployeeId || '_none'}
-                            onValueChange={(v) => {
-                              const emp = employees.find(e => e.id === v);
-                              updateProjectSkill(project.id, skill.id, {
-                                assignedEmployeeId: v === '_none' ? null : v,
-                                assignedEmployeeName: v === '_none' ? null : emp?.name || null,
-                              });
-                            }}
-                            disabled={!rowComplete}
-                          >
-                            <SelectTrigger className={cn("h-7 text-xs bg-card w-full", !rowComplete && "opacity-50 cursor-not-allowed")}>
-                              <SelectValue placeholder="Assign..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="_none">Unassigned</SelectItem>
-                              {employees.map(emp => {
-                                const availability = getEmployeeAvailability(emp, skill);
-                                return (
-                                  <SelectItem key={emp.id} value={emp.id}>
-                                    <span className={cn(
-                                      "inline-flex items-center gap-1.5",
-                                    )}>
-                                      <span className={cn(
-                                        "w-2 h-2 rounded-full shrink-0",
-                                        availability === 'available' ? 'bg-primary' : 'bg-destructive'
-                                      )} />
-                                      {emp.name}
-                                    </span>
-                                  </SelectItem>
-                                );
-                              })}
-                            </SelectContent>
-                          </Select>
-                        ) : skill.assignedEmployeeName ? (
-                          <span className="flex items-center gap-1 text-xs text-primary">
-                            <User className="w-3 h-3" />
-                            {skill.assignedEmployeeName}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground italic">Unassigned</span>
-                        )}
-                      </div>
-                    )}
-                    <div className="flex gap-1">
-                      {isPM && (
-                        <>
-                          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => updateProjectSkill(project.id, skill.id, { fixed: !skill.fixed })}>
-                            {skill.fixed ? <Lock className="w-3 h-3 text-warning" /> : <Unlock className="w-3 h-3 text-muted-foreground" />}
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={() => removeProjectSkill(project.id, skill.id)}>
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={project.skills.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                <div className="space-y-1">
+                  {project.skills.map((skill) => (
+                    <SortableSkillRow
+                      key={skill.id}
+                      skill={skill}
+                      gridCols={gridCols}
+                      showPersonColumn={showPersonColumn}
+                      isPM={isPM}
+                      employees={employees}
+                      rowComplete={isSkillRowComplete(skill)}
+                      getEmployeeAvailability={getEmployeeAvailability}
+                      onAssignChange={(empId) => {
+                        const emp = employees.find(e => e.id === empId);
+                        updateProjectSkill(project.id, skill.id, {
+                          assignedEmployeeId: empId === '_none' ? null : empId,
+                          assignedEmployeeName: empId === '_none' ? null : emp?.name || null,
+                        });
+                      }}
+                      onToggleFixed={() => updateProjectSkill(project.id, skill.id, { fixed: !skill.fixed })}
+                      onRemove={() => removeProjectSkill(project.id, skill.id)}
+                      preference={rowPreference[skill.id] ?? ''}
+                      onPreferenceChange={(p) => setRowPreference(prev => ({ ...prev, [skill.id]: p }))}
+                      onAutoAssign={() => {
+                        const pref = rowPreference[skill.id];
+                        if (!pref) return;
+                        autoAssignSkill(project.id, skill.id, pref);
+                      }}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
 
             {/* Add skill form */}
             {addingSkill && isPM && (
               <div className="mt-2 p-3 border border-border rounded-md bg-background animate-fade-in">
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                   <Select value={newSkillId} onValueChange={setNewSkillId}>
                     <SelectTrigger className="h-8 text-xs bg-card">
                       <SelectValue placeholder="Select skill..." />
@@ -387,7 +372,6 @@ export function ProjectCard({ project }: { project: Project }) {
                       {[1, 2, 3].map(l => <SelectItem key={l} value={String(l)}>Level {l}</SelectItem>)}
                     </SelectContent>
                   </Select>
-                  <Input type="number" placeholder="Man-days" value={newSkillDuration} onChange={e => setNewSkillDuration(e.target.value)} className="h-8 text-xs bg-card" />
                   <Input
                     type="number"
                     step="0.01"
@@ -415,6 +399,135 @@ export function ProjectCard({ project }: { project: Project }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+interface SortableSkillRowProps {
+  skill: ProjectSkill;
+  gridCols: string;
+  showPersonColumn: boolean;
+  isPM: boolean;
+  employees: ReturnType<typeof useData>['employees'];
+  rowComplete: boolean;
+  getEmployeeAvailability: (emp: ReturnType<typeof useData>['employees'][0], skill: ProjectSkill) => 'available' | 'overtime';
+  onAssignChange: (empId: string) => void;
+  onToggleFixed: () => void;
+  onRemove: () => void;
+  preference: AssignPreference | '';
+  onPreferenceChange: (p: AssignPreference) => void;
+  onAutoAssign: () => void;
+}
+
+function SortableSkillRow({
+  skill, gridCols, showPersonColumn, isPM, employees, rowComplete,
+  getEmployeeAvailability, onAssignChange, onToggleFixed, onRemove,
+  preference, onPreferenceChange, onAutoAssign,
+}: SortableSkillRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: skill.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.6 : 1,
+  };
+
+  const isEmpty = !skill.assignedEmployeeId && !skill.fixed;
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ ...style, gridTemplateColumns: gridCols }}
+      className="grid gap-3 items-center bg-background rounded-md px-3 py-2 text-sm"
+    >
+      <button
+        type="button"
+        className="flex items-center justify-center text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
+        aria-label="Drag to reorder"
+        {...attributes}
+        {...listeners}
+      >
+        <GripVertical className="w-4 h-4" />
+      </button>
+      <span className="font-medium text-foreground">{skill.skillName}</span>
+      <Badge variant="outline" className="text-xs font-mono w-fit">Lv.{skill.level}</Badge>
+      <span className="text-xs text-muted-foreground font-mono">{skill.startDate} – {skill.endDate}</span>
+      <span className="text-xs text-muted-foreground font-mono">
+        {typeof skill.capacityOnProject === 'number' ? skill.capacityOnProject.toFixed(2) : '—'}
+      </span>
+      {showPersonColumn && (
+        <div className="flex items-center gap-1">
+          {isPM ? (
+            <Select
+              value={skill.assignedEmployeeId || '_none'}
+              onValueChange={onAssignChange}
+              disabled={!rowComplete}
+            >
+              <SelectTrigger className={cn("h-7 text-xs bg-card w-full", !rowComplete && "opacity-50 cursor-not-allowed")}>
+                <SelectValue placeholder="Assign..." />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="_none">Unassigned</SelectItem>
+                {employees.map(emp => {
+                  const availability = getEmployeeAvailability(emp, skill);
+                  return (
+                    <SelectItem key={emp.id} value={emp.id}>
+                      <span className="inline-flex items-center gap-1.5">
+                        <span className={cn(
+                          "w-2 h-2 rounded-full shrink-0",
+                          availability === 'available' ? 'bg-primary' : 'bg-destructive'
+                        )} />
+                        {emp.name}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          ) : skill.assignedEmployeeName ? (
+            <span className="flex items-center gap-1 text-xs text-primary">
+              <User className="w-3 h-3" />
+              {skill.assignedEmployeeName}
+            </span>
+          ) : (
+            <span className="text-xs text-muted-foreground italic">Unassigned</span>
+          )}
+        </div>
+      )}
+      <div className="flex gap-1 justify-end">
+        {isPM && isEmpty && rowComplete && (
+          <>
+            <Select value={preference} onValueChange={(v) => onPreferenceChange(v as AssignPreference)}>
+              <SelectTrigger className="h-6 text-xs bg-card w-[110px] px-2">
+                <SelectValue placeholder="Pref…" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cost">Min Cost</SelectItem>
+                <SelectItem value="capacity">Max Capacity</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+              disabled={!preference}
+              onClick={onAutoAssign}
+              title={preference ? 'Auto-assign optimal employee' : 'Select preference first'}
+            >
+              <Calculator className="w-3 h-3" />
+            </Button>
+          </>
+        )}
+        {isPM && (
+          <>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggleFixed}>
+              {skill.fixed ? <Lock className="w-3 h-3 text-warning" /> : <Unlock className="w-3 h-3 text-muted-foreground" />}
+            </Button>
+            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={onRemove}>
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
