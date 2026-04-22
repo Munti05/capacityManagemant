@@ -11,8 +11,10 @@ export async function listEmployees(): Promise<Employee[]> {
   return delay([...store.employees]);
 }
 
-export async function createEmployee(input: NewEmployeeInput): Promise<Employee> {
-  const id = `e${Date.now()}`;
+export async function createEmployee(
+  input: NewEmployeeInput & { id?: string },
+): Promise<Employee> {
+  const id = input.id ?? `e${Date.now()}`;
   const totalCapacity = Math.round((input.baseCapacity ?? 1) * 40);
   const created: Employee = {
     ...input,

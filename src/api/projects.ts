@@ -29,8 +29,10 @@ export async function listProjects(): Promise<Project[]> {
   return delay([...store.projects]);
 }
 
-export async function createProject(input: NewProjectInput): Promise<Project> {
-  const id = `p${Date.now()}`;
+export async function createProject(
+  input: NewProjectInput & { id?: string },
+): Promise<Project> {
+  const id = input.id ?? `p${Date.now()}`;
   const newProject: Project = {
     ...input,
     id,
