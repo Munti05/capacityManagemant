@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Project, ProjectStatus, ProjectSkill } from '@/data/mockData';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ProgressBar } from '@/components/ProgressBar';
-import { ChevronDown, ChevronUp, User, Pencil, Check, X, Plus, Trash2, Lock, Unlock, Calculator, GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronUp, User, Pencil, Check, X, Plus, Trash2, Calculator, GripVertical } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -34,7 +35,15 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat('hu-HU').format(value) + ' HUF';
+  return new Intl.NumberFormat('hu-HU').format(Math.round(value)) + ' HUF';
+}
+
+function daysBetween(start: string, end: string): number {
+  if (!start || !end) return 0;
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (Number.isNaN(s) || Number.isNaN(e) || e < s) return 0;
+  return Math.max(1, Math.round((e - s) / (1000 * 60 * 60 * 24)));
 }
 
 type AssignPreference = 'cost' | 'capacity';
@@ -42,6 +51,9 @@ type AssignPreference = 'cost' | 'capacity';
 export function ProjectCard({ project }: { project: Project }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editShortName, setEditShortName] = useState(project.shortName);
+  const [editName, setEditName] = useState(project.name);
+  const [editStatus, setEditStatus] = useState<ProjectStatus>(project.status);
   const [editDesc, setEditDesc] = useState(project.description);
   const [editStart, setEditStart] = useState<Date | undefined>(project.startDate ? parseISO(project.startDate) : undefined);
   const [editEnd, setEditEnd] = useState<Date | undefined>(project.endDate ? parseISO(project.endDate) : undefined);
@@ -57,6 +69,7 @@ export function ProjectCard({ project }: { project: Project }) {
   // Preference selectors for auto-assignment
   const [bulkPreference, setBulkPreference] = useState<AssignPreference | ''>('');
   const [rowPreference, setRowPreference] = useState<Record<string, AssignPreference>>({});
+  const [bulkPrefError, setBulkPrefError] = useState(false);
   const { isPM } = useAuth();
   const {
     updateProjectStatus, updateProject, skills: globalSkills,
@@ -95,7 +108,10 @@ export function ProjectCard({ project }: { project: Project }) {
       endDate: editEnd ? format(editEnd, 'yyyy-MM-dd') : project.endDate,
       fixedCost: editFixedCost === '' ? undefined : Number(editFixedCost),
       revenue: editRevenue === '' ? undefined : Number(editRevenue),
-    });
+      shortName: editShortName,
+      name: editName,
+      status: editStatus,
+    } as Parameters<typeof updateProject>[1]);
     setEditing(false);
   };
 
@@ -129,19 +145,32 @@ export function ProjectCard({ project }: { project: Project }) {
     setAddingSkill(false);
   };
 
-  const getEmployeeAvailability = (emp: typeof employees[0], skill: ProjectSkill): 'available' | 'overtime' => {
+  // Three-tier availability: 'available' (green), 'partial' (amber), 'overloaded' (red)
+  const getEmployeeAvailability = (emp: typeof employees[0], skill: ProjectSkill): 'available' | 'partial' | 'overloaded' => {
     const hasSkill = emp.skills.find(s => s.skillId === skill.skillId && s.level >= skill.level);
-    if (!hasSkill) return 'overtime';
-    const usedBefore = emp.plannedCapacity + emp.allocatedCapacity;
-    const usedAfter = usedBefore + skill.duration;
-    if (usedBefore >= emp.totalCapacity || usedAfter > emp.totalCapacity) return 'overtime';
-    return 'available';
+    if (!hasSkill) return 'overloaded';
+    const used = emp.plannedCapacity + emp.allocatedCapacity;
+    const total = emp.totalCapacity || 1;
+    const ratio = used / total;
+    if (ratio < 0.7) return 'available';
+    if (ratio < 1) return 'partial';
+    return 'overloaded';
   };
 
   const isSkillRowComplete = (skill: ProjectSkill) =>
     Boolean(skill.skillId && skill.level && skill.startDate && skill.endDate && typeof skill.capacityOnProject === 'number');
 
   const emptySkillCount = project.skills.filter(s => !s.assignedEmployeeId && !s.fixed).length;
+
+  // Employee Cost = Σ (hourlyRate × capacityOnProject × 8h × days) for each assigned skill
+  const employeeCost = project.skills.reduce((sum, s) => {
+    if (!s.assignedEmployeeId) return sum;
+    const emp = employees.find(e => e.id === s.assignedEmployeeId);
+    if (!emp || typeof emp.hourlyRate !== 'number') return sum;
+    const cap = typeof s.capacityOnProject === 'number' ? s.capacityOnProject : 0;
+    const days = daysBetween(s.startDate, s.endDate);
+    return sum + emp.hourlyRate * cap * 8 * days;
+  }, 0);
 
   // Grid columns: Drag | Skill | Level | Interval | Cap. on proj. | (Assigned) | Actions
   const gridCols = showPersonColumn
@@ -150,36 +179,57 @@ export function ProjectCard({ project }: { project: Project }) {
 
   return (
     <div className="border border-border rounded-lg bg-card transition-all duration-200 hover:border-primary/30">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left"
-      >
-        <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">
-          {project.shortName}
-        </span>
-        <span className="text-sm font-medium text-foreground truncate flex-1">{project.name}</span>
-        <StatusBadge status={project.status} />
-        <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
-        <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
-        <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
-        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
-      </button>
+      {editing && expanded ? (
+        <div className="w-full flex items-center gap-3 px-4 py-3">
+          <Input
+            value={editShortName}
+            onChange={e => setEditShortName(e.target.value)}
+            className="font-mono text-xs h-7 w-24 bg-background"
+            placeholder="Short"
+          />
+          <Input
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+            className="text-sm h-7 flex-1 bg-background"
+            placeholder="Project name"
+          />
+          <Select value={editStatus} onValueChange={(v) => setEditStatus(v as ProjectStatus)}>
+            <SelectTrigger className="w-32 h-7 text-xs bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
+          <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
+          <button onClick={() => setExpanded(false)} className="shrink-0" aria-label="Collapse">
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center gap-3 px-4 py-3 text-left"
+        >
+          <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">
+            {project.shortName}
+          </span>
+          <span className="text-sm font-medium text-foreground truncate flex-1">{project.name}</span>
+          <StatusBadge status={project.status} />
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
+          <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
+          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+        </button>
+      )}
 
       {expanded && (
         <div className="px-4 pb-4 border-t border-border animate-fade-in">
           <div className="flex items-center justify-between mt-4 mb-3">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Details</h3>
             <div className="flex gap-2">
-              {isPM && (
-                <Select value={project.status} onValueChange={(v) => updateProjectStatus(project.id, v as ProjectStatus)}>
-                  <SelectTrigger className="w-32 h-7 text-xs bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )}
               {!editing ? (
                 <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setEditing(true)}>
                   <Pencil className="w-3 h-3 mr-1" /> Edit
@@ -191,6 +241,9 @@ export function ProjectCard({ project }: { project: Project }) {
                   </Button>
                   <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
                     setEditing(false);
+                    setEditShortName(project.shortName);
+                    setEditName(project.name);
+                    setEditStatus(project.status);
                     setEditDesc(project.description);
                     setEditStart(project.startDate ? parseISO(project.startDate) : undefined);
                     setEditEnd(project.endDate ? parseISO(project.endDate) : undefined);
@@ -204,18 +257,23 @@ export function ProjectCard({ project }: { project: Project }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Row 1: Description (full width) */}
+          <div className="mb-4">
             {editing ? (
-              <div className="md:col-span-2 lg:col-span-3">
-                <p className="text-xs text-muted-foreground mb-1">Description</p>
+              <div>
+                <p className="text-sm font-medium text-foreground mb-1">Description</p>
                 <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="bg-background text-sm" rows={2} />
               </div>
             ) : (
               <DetailItem label="Description" value={project.description} />
             )}
+          </div>
+
+          {/* Row 2: Start Date / End Date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                <p className="text-sm font-medium text-foreground mb-1">Start Date</p>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full h-8 text-xs justify-start", !editStart && "text-muted-foreground")}>
@@ -233,7 +291,7 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                <p className="text-sm font-medium text-foreground mb-1">End Date</p>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full h-8 text-xs justify-start", !editEnd && "text-muted-foreground")}>
@@ -249,9 +307,13 @@ export function ProjectCard({ project }: { project: Project }) {
             ) : (
               <DetailItem label="End Date" value={project.endDate} />
             )}
+          </div>
+
+          {/* Row 3: Financials — Fixed Cost / Revenue / Employee Cost */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Fixed Cost (HUF)</p>
+                <p className="text-sm font-medium text-foreground mb-1">Fixed Cost (HUF)</p>
                 <Input type="number" value={editFixedCost} onChange={e => setEditFixedCost(e.target.value)} className="bg-background h-8 text-sm" />
               </div>
             ) : (
@@ -259,12 +321,13 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Revenue (HUF)</p>
+                <p className="text-sm font-medium text-foreground mb-1">Revenue (HUF)</p>
                 <Input type="number" value={editRevenue} onChange={e => setEditRevenue(e.target.value)} className="bg-background h-8 text-sm" />
               </div>
             ) : (
               <DetailItem label="Revenue" value={typeof project.revenue === 'number' ? formatCurrency(project.revenue) : '—'} />
             )}
+            <DetailItem label="Employee Cost" value={employeeCost > 0 ? formatCurrency(employeeCost) : '—'} />
           </div>
 
           {/* Skills section */}
@@ -272,10 +335,10 @@ export function ProjectCard({ project }: { project: Project }) {
             <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Required Skills</h4>
               <div className="flex gap-2 items-center flex-wrap">
-                {isPM && emptySkillCount > 0 && (
+                {isPM && (
                   <>
-                    <Select value={bulkPreference} onValueChange={(v) => setBulkPreference(v as AssignPreference)}>
-                      <SelectTrigger className="w-44 h-7 text-xs bg-background">
+                    <Select value={bulkPreference} onValueChange={(v) => { setBulkPreference(v as AssignPreference); setBulkPrefError(false); }}>
+                      <SelectTrigger className={cn("w-44 h-7 text-xs bg-background", bulkPrefError && "border-destructive")}>
                         <SelectValue placeholder="Optimization preference…" />
                       </SelectTrigger>
                       <SelectContent>
@@ -287,9 +350,11 @@ export function ProjectCard({ project }: { project: Project }) {
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      disabled={!bulkPreference}
-                      onClick={() => bulkPreference && autoAssignAllEmptySkills(project.id, bulkPreference)}
-                      title={!bulkPreference ? 'Select an optimization preference first' : 'Auto-assign all empty skills'}
+                      onClick={() => {
+                        if (!bulkPreference) { setBulkPrefError(true); return; }
+                        autoAssignAllEmptySkills(project.id, bulkPreference);
+                      }}
+                      title={!bulkPreference ? 'Select an optimization preference first' : 'Auto-assign empty skills'}
                     >
                       <Calculator className="w-3 h-3 mr-1" /> Calculate
                     </Button>
@@ -303,9 +368,9 @@ export function ProjectCard({ project }: { project: Project }) {
               </div>
             </div>
 
-            {/* Skill list header */}
+            {/* Skill list header — typography matches detail labels */}
             {project.skills.length > 0 && (
-              <div className="grid gap-3 text-xs text-muted-foreground font-medium uppercase tracking-wider px-3 py-1.5 border-b border-border mb-1"
+              <div className="grid gap-3 text-sm font-medium text-foreground px-3 py-1.5 border-b border-border mb-1"
                 style={{ gridTemplateColumns: gridCols }}>
                 <span></span>
                 <span>Skill</span>
@@ -403,6 +468,8 @@ export function ProjectCard({ project }: { project: Project }) {
   );
 }
 
+type AvailabilityTier = 'available' | 'partial' | 'overloaded';
+
 interface SortableSkillRowProps {
   skill: ProjectSkill;
   gridCols: string;
@@ -410,13 +477,19 @@ interface SortableSkillRowProps {
   isPM: boolean;
   employees: ReturnType<typeof useData>['employees'];
   rowComplete: boolean;
-  getEmployeeAvailability: (emp: ReturnType<typeof useData>['employees'][0], skill: ProjectSkill) => 'available' | 'overtime';
+  getEmployeeAvailability: (emp: ReturnType<typeof useData>['employees'][0], skill: ProjectSkill) => AvailabilityTier;
   onAssignChange: (empId: string) => void;
   onToggleFixed: () => void;
   onRemove: () => void;
   preference: AssignPreference | '';
   onPreferenceChange: (p: AssignPreference) => void;
   onAutoAssign: () => void;
+}
+
+function availabilityClass(tier: AvailabilityTier) {
+  if (tier === 'available') return 'bg-primary';
+  if (tier === 'partial') return 'bg-warning';
+  return 'bg-destructive';
 }
 
 function SortableSkillRow({
@@ -455,7 +528,15 @@ function SortableSkillRow({
         {typeof skill.capacityOnProject === 'number' ? skill.capacityOnProject.toFixed(2) : '—'}
       </span>
       {showPersonColumn && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {isPM && skill.assignedEmployeeId && (
+            <Checkbox
+              checked={skill.fixed}
+              onCheckedChange={onToggleFixed}
+              aria-label={skill.fixed ? 'Unfinalize assignment' : 'Finalize assignment'}
+              title={skill.fixed ? 'Finalized — uncheck to edit freely' : 'Check to finalize this assignment'}
+            />
+          )}
           {isPM ? (
             <Select
               value={skill.assignedEmployeeId || '_none'}
@@ -472,10 +553,7 @@ function SortableSkillRow({
                   return (
                     <SelectItem key={emp.id} value={emp.id}>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className={cn(
-                          "w-2 h-2 rounded-full shrink-0",
-                          availability === 'available' ? 'bg-primary' : 'bg-destructive'
-                        )} />
+                        <span className={cn("w-2 h-2 rounded-full shrink-0", availabilityClass(availability))} />
                         {emp.name}
                       </span>
                     </SelectItem>
@@ -518,14 +596,9 @@ function SortableSkillRow({
           </>
         )}
         {isPM && (
-          <>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggleFixed}>
-              {skill.fixed ? <Lock className="w-3 h-3 text-warning" /> : <Unlock className="w-3 h-3 text-muted-foreground" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={onRemove}>
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </>
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={onRemove}>
+            <Trash2 className="w-3 h-3" />
+          </Button>
         )}
       </div>
     </div>
