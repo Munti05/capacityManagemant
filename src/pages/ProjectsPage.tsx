@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, ArrowUpDown, Search, Filter, X } from 'lucide-react';
 import { ProjectStatus } from '@/data/mockData';
 
-type SortColumn = 'shortName' | 'name' | 'status' | 'startDate' | 'progress' | 'endDate' | 'overallCapacity';
+type SortColumn = 'shortName' | 'name' | 'status' | 'startDate' | 'progress' | 'endDate';
 type SortDir = 'asc' | 'desc';
 
 function defaultSort(a: { status: string; endDate: string }, b: { status: string; endDate: string }) {
@@ -70,7 +70,6 @@ export default function ProjectsPage() {
     { value: 'startDate', label: 'Start' },
     { value: 'progress', label: 'Progress' },
     { value: 'endDate', label: 'End' },
-    { value: 'overallCapacity', label: 'Capacity' },
   ];
 
   return (
