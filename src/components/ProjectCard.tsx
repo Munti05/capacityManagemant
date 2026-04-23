@@ -178,36 +178,57 @@ export function ProjectCard({ project }: { project: Project }) {
 
   return (
     <div className="border border-border rounded-lg bg-card transition-all duration-200 hover:border-primary/30">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left"
-      >
-        <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">
-          {project.shortName}
-        </span>
-        <span className="text-sm font-medium text-foreground truncate flex-1">{project.name}</span>
-        <StatusBadge status={project.status} />
-        <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
-        <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
-        <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
-        {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
-      </button>
+      {editing && expanded ? (
+        <div className="w-full flex items-center gap-3 px-4 py-3">
+          <Input
+            value={editShortName}
+            onChange={e => setEditShortName(e.target.value)}
+            className="font-mono text-xs h-7 w-24 bg-background"
+            placeholder="Short"
+          />
+          <Input
+            value={editName}
+            onChange={e => setEditName(e.target.value)}
+            className="text-sm h-7 flex-1 bg-background"
+            placeholder="Project name"
+          />
+          <Select value={editStatus} onValueChange={(v) => setEditStatus(v as ProjectStatus)}>
+            <SelectTrigger className="w-32 h-7 text-xs bg-background">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
+          <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
+          <button onClick={() => setExpanded(false)} className="shrink-0" aria-label="Collapse">
+            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+      ) : (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full flex items-center gap-3 px-4 py-3 text-left"
+        >
+          <span className="font-mono text-xs text-primary bg-primary/10 px-2 py-0.5 rounded shrink-0">
+            {project.shortName}
+          </span>
+          <span className="text-sm font-medium text-foreground truncate flex-1">{project.name}</span>
+          <StatusBadge status={project.status} />
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.startDate}</span>
+          <div className="hidden sm:block border-l border-border pl-3"><ProgressBar value={project.progress} /></div>
+          <span className="text-xs text-muted-foreground font-mono hidden lg:inline border-l border-border pl-3">{project.endDate}</span>
+          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" /> : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+        </button>
+      )}
 
       {expanded && (
         <div className="px-4 pb-4 border-t border-border animate-fade-in">
           <div className="flex items-center justify-between mt-4 mb-3">
             <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Details</h3>
             <div className="flex gap-2">
-              {isPM && (
-                <Select value={project.status} onValueChange={(v) => updateProjectStatus(project.id, v as ProjectStatus)}>
-                  <SelectTrigger className="w-32 h-7 text-xs bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              )}
               {!editing ? (
                 <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => setEditing(true)}>
                   <Pencil className="w-3 h-3 mr-1" /> Edit
@@ -219,6 +240,9 @@ export function ProjectCard({ project }: { project: Project }) {
                   </Button>
                   <Button variant="outline" size="sm" className="h-7 text-xs" onClick={() => {
                     setEditing(false);
+                    setEditShortName(project.shortName);
+                    setEditName(project.name);
+                    setEditStatus(project.status);
                     setEditDesc(project.description);
                     setEditStart(project.startDate ? parseISO(project.startDate) : undefined);
                     setEditEnd(project.endDate ? parseISO(project.endDate) : undefined);
@@ -232,18 +256,23 @@ export function ProjectCard({ project }: { project: Project }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Row 1: Description (full width) */}
+          <div className="mb-4">
             {editing ? (
-              <div className="md:col-span-2 lg:col-span-3">
-                <p className="text-xs text-muted-foreground mb-1">Description</p>
+              <div>
+                <p className="text-sm font-medium text-foreground mb-1">Description</p>
                 <Textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} className="bg-background text-sm" rows={2} />
               </div>
             ) : (
               <DetailItem label="Description" value={project.description} />
             )}
+          </div>
+
+          {/* Row 2: Start Date / End Date */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Start Date</p>
+                <p className="text-sm font-medium text-foreground mb-1">Start Date</p>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full h-8 text-xs justify-start", !editStart && "text-muted-foreground")}>
@@ -261,7 +290,7 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">End Date</p>
+                <p className="text-sm font-medium text-foreground mb-1">End Date</p>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className={cn("w-full h-8 text-xs justify-start", !editEnd && "text-muted-foreground")}>
@@ -277,9 +306,13 @@ export function ProjectCard({ project }: { project: Project }) {
             ) : (
               <DetailItem label="End Date" value={project.endDate} />
             )}
+          </div>
+
+          {/* Row 3: Financials — Fixed Cost / Revenue / Employee Cost */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Fixed Cost (HUF)</p>
+                <p className="text-sm font-medium text-foreground mb-1">Fixed Cost (HUF)</p>
                 <Input type="number" value={editFixedCost} onChange={e => setEditFixedCost(e.target.value)} className="bg-background h-8 text-sm" />
               </div>
             ) : (
@@ -287,12 +320,13 @@ export function ProjectCard({ project }: { project: Project }) {
             )}
             {editing ? (
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Revenue (HUF)</p>
+                <p className="text-sm font-medium text-foreground mb-1">Revenue (HUF)</p>
                 <Input type="number" value={editRevenue} onChange={e => setEditRevenue(e.target.value)} className="bg-background h-8 text-sm" />
               </div>
             ) : (
               <DetailItem label="Revenue" value={typeof project.revenue === 'number' ? formatCurrency(project.revenue) : '—'} />
             )}
+            <DetailItem label="Employee Cost" value={employeeCost > 0 ? formatCurrency(employeeCost) : '—'} />
           </div>
 
           {/* Skills section */}
