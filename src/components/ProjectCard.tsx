@@ -34,7 +34,15 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat('hu-HU').format(value) + ' HUF';
+  return new Intl.NumberFormat('hu-HU').format(Math.round(value)) + ' HUF';
+}
+
+function daysBetween(start: string, end: string): number {
+  if (!start || !end) return 0;
+  const s = new Date(start).getTime();
+  const e = new Date(end).getTime();
+  if (Number.isNaN(s) || Number.isNaN(e) || e < s) return 0;
+  return Math.max(1, Math.round((e - s) / (1000 * 60 * 60 * 24)));
 }
 
 type AssignPreference = 'cost' | 'capacity';
