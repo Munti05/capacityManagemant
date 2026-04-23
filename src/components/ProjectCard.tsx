@@ -334,10 +334,10 @@ export function ProjectCard({ project }: { project: Project }) {
             <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Required Skills</h4>
               <div className="flex gap-2 items-center flex-wrap">
-                {isPM && emptySkillCount > 0 && (
+                {isPM && (
                   <>
-                    <Select value={bulkPreference} onValueChange={(v) => setBulkPreference(v as AssignPreference)}>
-                      <SelectTrigger className="w-44 h-7 text-xs bg-background">
+                    <Select value={bulkPreference} onValueChange={(v) => { setBulkPreference(v as AssignPreference); setBulkPrefError(false); }}>
+                      <SelectTrigger className={cn("w-44 h-7 text-xs bg-background", bulkPrefError && "border-destructive")}>
                         <SelectValue placeholder="Optimization preference…" />
                       </SelectTrigger>
                       <SelectContent>
@@ -349,9 +349,11 @@ export function ProjectCard({ project }: { project: Project }) {
                       variant="outline"
                       size="sm"
                       className="h-7 text-xs"
-                      disabled={!bulkPreference}
-                      onClick={() => bulkPreference && autoAssignAllEmptySkills(project.id, bulkPreference)}
-                      title={!bulkPreference ? 'Select an optimization preference first' : 'Auto-assign all empty skills'}
+                      onClick={() => {
+                        if (!bulkPreference) { setBulkPrefError(true); return; }
+                        autoAssignAllEmptySkills(project.id, bulkPreference);
+                      }}
+                      title={!bulkPreference ? 'Select an optimization preference first' : 'Auto-assign empty skills'}
                     >
                       <Calculator className="w-3 h-3 mr-1" /> Calculate
                     </Button>
@@ -365,9 +367,9 @@ export function ProjectCard({ project }: { project: Project }) {
               </div>
             </div>
 
-            {/* Skill list header */}
+            {/* Skill list header — typography matches detail labels */}
             {project.skills.length > 0 && (
-              <div className="grid gap-3 text-xs text-muted-foreground font-medium uppercase tracking-wider px-3 py-1.5 border-b border-border mb-1"
+              <div className="grid gap-3 text-sm font-medium text-foreground px-3 py-1.5 border-b border-border mb-1"
                 style={{ gridTemplateColumns: gridCols }}>
                 <span></span>
                 <span>Skill</span>
