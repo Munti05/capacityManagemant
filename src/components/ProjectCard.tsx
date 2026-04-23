@@ -107,7 +107,10 @@ export function ProjectCard({ project }: { project: Project }) {
       endDate: editEnd ? format(editEnd, 'yyyy-MM-dd') : project.endDate,
       fixedCost: editFixedCost === '' ? undefined : Number(editFixedCost),
       revenue: editRevenue === '' ? undefined : Number(editRevenue),
-    });
+      shortName: editShortName,
+      name: editName,
+      status: editStatus,
+    } as Parameters<typeof updateProject>[1]);
     setEditing(false);
   };
 
@@ -141,19 +144,32 @@ export function ProjectCard({ project }: { project: Project }) {
     setAddingSkill(false);
   };
 
-  const getEmployeeAvailability = (emp: typeof employees[0], skill: ProjectSkill): 'available' | 'overtime' => {
+  // Three-tier availability: 'available' (green), 'partial' (amber), 'overloaded' (red)
+  const getEmployeeAvailability = (emp: typeof employees[0], skill: ProjectSkill): 'available' | 'partial' | 'overloaded' => {
     const hasSkill = emp.skills.find(s => s.skillId === skill.skillId && s.level >= skill.level);
-    if (!hasSkill) return 'overtime';
-    const usedBefore = emp.plannedCapacity + emp.allocatedCapacity;
-    const usedAfter = usedBefore + skill.duration;
-    if (usedBefore >= emp.totalCapacity || usedAfter > emp.totalCapacity) return 'overtime';
-    return 'available';
+    if (!hasSkill) return 'overloaded';
+    const used = emp.plannedCapacity + emp.allocatedCapacity;
+    const total = emp.totalCapacity || 1;
+    const ratio = used / total;
+    if (ratio < 0.7) return 'available';
+    if (ratio < 1) return 'partial';
+    return 'overloaded';
   };
 
   const isSkillRowComplete = (skill: ProjectSkill) =>
     Boolean(skill.skillId && skill.level && skill.startDate && skill.endDate && typeof skill.capacityOnProject === 'number');
 
   const emptySkillCount = project.skills.filter(s => !s.assignedEmployeeId && !s.fixed).length;
+
+  // Employee Cost = Σ (hourlyRate × capacityOnProject × 8h × days) for each assigned skill
+  const employeeCost = project.skills.reduce((sum, s) => {
+    if (!s.assignedEmployeeId) return sum;
+    const emp = employees.find(e => e.id === s.assignedEmployeeId);
+    if (!emp || typeof emp.hourlyRate !== 'number') return sum;
+    const cap = typeof s.capacityOnProject === 'number' ? s.capacityOnProject : 0;
+    const days = daysBetween(s.startDate, s.endDate);
+    return sum + emp.hourlyRate * cap * 8 * days;
+  }, 0);
 
   // Grid columns: Drag | Skill | Level | Interval | Cap. on proj. | (Assigned) | Actions
   const gridCols = showPersonColumn
