@@ -179,12 +179,10 @@ export default function ResourcesPage() {
                       {emp.hourlyRate}/h
                     </span>
                   )}
-                  {emp.location && (
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {emp.location}
-                    </span>
-                  )}
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {emp.location || '—'}
+                  </span>
                 </div>
               </div>
 
