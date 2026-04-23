@@ -50,6 +50,9 @@ type AssignPreference = 'cost' | 'capacity';
 export function ProjectCard({ project }: { project: Project }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [editShortName, setEditShortName] = useState(project.shortName);
+  const [editName, setEditName] = useState(project.name);
+  const [editStatus, setEditStatus] = useState<ProjectStatus>(project.status);
   const [editDesc, setEditDesc] = useState(project.description);
   const [editStart, setEditStart] = useState<Date | undefined>(project.startDate ? parseISO(project.startDate) : undefined);
   const [editEnd, setEditEnd] = useState<Date | undefined>(project.endDate ? parseISO(project.endDate) : undefined);
@@ -65,6 +68,7 @@ export function ProjectCard({ project }: { project: Project }) {
   // Preference selectors for auto-assignment
   const [bulkPreference, setBulkPreference] = useState<AssignPreference | ''>('');
   const [rowPreference, setRowPreference] = useState<Record<string, AssignPreference>>({});
+  const [bulkPrefError, setBulkPrefError] = useState(false);
   const { isPM } = useAuth();
   const {
     updateProjectStatus, updateProject, skills: globalSkills,
