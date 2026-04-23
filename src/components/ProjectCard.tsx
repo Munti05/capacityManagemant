@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Project, ProjectStatus, ProjectSkill } from '@/data/mockData';
 import { StatusBadge } from '@/components/StatusBadge';
 import { ProgressBar } from '@/components/ProgressBar';
-import { ChevronDown, ChevronUp, User, Pencil, Check, X, Plus, Trash2, Lock, Unlock, Calculator, GripVertical } from 'lucide-react';
+import { ChevronDown, ChevronUp, User, Pencil, Check, X, Plus, Trash2, Calculator, GripVertical } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useAuth } from '@/contexts/AuthContext';
 import { useData } from '@/contexts/DataContext';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -467,6 +468,8 @@ export function ProjectCard({ project }: { project: Project }) {
   );
 }
 
+type AvailabilityTier = 'available' | 'partial' | 'overloaded';
+
 interface SortableSkillRowProps {
   skill: ProjectSkill;
   gridCols: string;
@@ -474,13 +477,19 @@ interface SortableSkillRowProps {
   isPM: boolean;
   employees: ReturnType<typeof useData>['employees'];
   rowComplete: boolean;
-  getEmployeeAvailability: (emp: ReturnType<typeof useData>['employees'][0], skill: ProjectSkill) => 'available' | 'overtime';
+  getEmployeeAvailability: (emp: ReturnType<typeof useData>['employees'][0], skill: ProjectSkill) => AvailabilityTier;
   onAssignChange: (empId: string) => void;
   onToggleFixed: () => void;
   onRemove: () => void;
   preference: AssignPreference | '';
   onPreferenceChange: (p: AssignPreference) => void;
   onAutoAssign: () => void;
+}
+
+function availabilityClass(tier: AvailabilityTier) {
+  if (tier === 'available') return 'bg-primary';
+  if (tier === 'partial') return 'bg-warning';
+  return 'bg-destructive';
 }
 
 function SortableSkillRow({
@@ -519,7 +528,15 @@ function SortableSkillRow({
         {typeof skill.capacityOnProject === 'number' ? skill.capacityOnProject.toFixed(2) : '—'}
       </span>
       {showPersonColumn && (
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
+          {isPM && skill.assignedEmployeeId && (
+            <Checkbox
+              checked={skill.fixed}
+              onCheckedChange={onToggleFixed}
+              aria-label={skill.fixed ? 'Unfinalize assignment' : 'Finalize assignment'}
+              title={skill.fixed ? 'Finalized — uncheck to edit freely' : 'Check to finalize this assignment'}
+            />
+          )}
           {isPM ? (
             <Select
               value={skill.assignedEmployeeId || '_none'}
@@ -536,10 +553,7 @@ function SortableSkillRow({
                   return (
                     <SelectItem key={emp.id} value={emp.id}>
                       <span className="inline-flex items-center gap-1.5">
-                        <span className={cn(
-                          "w-2 h-2 rounded-full shrink-0",
-                          availability === 'available' ? 'bg-primary' : 'bg-destructive'
-                        )} />
+                        <span className={cn("w-2 h-2 rounded-full shrink-0", availabilityClass(availability))} />
                         {emp.name}
                       </span>
                     </SelectItem>
@@ -582,14 +596,9 @@ function SortableSkillRow({
           </>
         )}
         {isPM && (
-          <>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onToggleFixed}>
-              {skill.fixed ? <Lock className="w-3 h-3 text-warning" /> : <Unlock className="w-3 h-3 text-muted-foreground" />}
-            </Button>
-            <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={onRemove}>
-              <Trash2 className="w-3 h-3" />
-            </Button>
-          </>
+          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-destructive" onClick={onRemove}>
+            <Trash2 className="w-3 h-3" />
+          </Button>
         )}
       </div>
     </div>
