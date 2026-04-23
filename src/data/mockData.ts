@@ -121,82 +121,82 @@ export const SKILLS: Skill[] = [
 // ── Employees (25+) ───────────────────────────────────────────────────────────
 
 export const EMPLOYEES: Employee[] = [
-  { id: 'e1', name: 'Alice Johnson', jobTitle: 'Senior Frontend Developer', salary: 85000, experience: 6,
+  { id: 'e1', name: 'Alice Johnson', jobTitle: 'Senior Frontend Developer', salary: 85000, experience: 6, location: 'Budapest'
     skills: [{ skillId: 's1', skillName: 'React', level: 3 }, { skillId: 's2', skillName: 'TypeScript', level: 3 }, { skillId: 's5', skillName: 'Next.js', level: 2 }],
     plannedCapacity: 10, allocatedCapacity: 15, totalCapacity: 40 },
-  { id: 'e2', name: 'Bob Smith', jobTitle: 'Backend Engineer', salary: 90000, experience: 8,
+  { id: 'e2', name: 'Bob Smith', jobTitle: 'Backend Engineer', salary: 90000, experience: 8, location: 'Berlin'
     skills: [{ skillId: 's6', skillName: 'Python', level: 3 }, { skillId: 's12', skillName: 'PostgreSQL', level: 3 }, { skillId: 's10', skillName: 'GraphQL', level: 2 }],
     plannedCapacity: 5, allocatedCapacity: 20, totalCapacity: 40 },
-  { id: 'e3', name: 'Carol Davis', jobTitle: 'DevOps Lead', salary: 95000, experience: 10,
+  { id: 'e3', name: 'Carol Davis', jobTitle: 'DevOps Lead', salary: 95000, experience: 10, location: 'Vienna'
     skills: [{ skillId: 's7', skillName: 'Node.js', level: 3 }, { skillId: 's17', skillName: 'Docker', level: 3 }, { skillId: 's19', skillName: 'AWS', level: 3 }, { skillId: 's18', skillName: 'Kubernetes', level: 2 }],
     plannedCapacity: 8, allocatedCapacity: 12, totalCapacity: 40 },
-  { id: 'e4', name: 'Dan Wilson', jobTitle: 'Full Stack Developer', salary: 80000, experience: 5,
+  { id: 'e4', name: 'Dan Wilson', jobTitle: 'Full Stack Developer', salary: 80000, experience: 5, location: 'Prague'
     skills: [{ skillId: 's1', skillName: 'React', level: 2 }, { skillId: 's2', skillName: 'TypeScript', level: 3 }, { skillId: 's7', skillName: 'Node.js', level: 3 }],
     plannedCapacity: 12, allocatedCapacity: 8, totalCapacity: 40 },
-  { id: 'e5', name: 'Eve Martinez', jobTitle: 'Cloud Architect', salary: 110000, experience: 12,
+  { id: 'e5', name: 'Eve Martinez', jobTitle: 'Cloud Architect', salary: 110000, experience: 12, location: 'Warsaw'
     skills: [{ skillId: 's6', skillName: 'Python', level: 3 }, { skillId: 's19', skillName: 'AWS', level: 3 }, { skillId: 's17', skillName: 'Docker', level: 3 }, { skillId: 's18', skillName: 'Kubernetes', level: 3 }],
     plannedCapacity: 3, allocatedCapacity: 25, totalCapacity: 40 },
-  { id: 'e6', name: 'Frank Lee', jobTitle: 'UI/UX Designer', salary: 70000, experience: 4,
+  { id: 'e6', name: 'Frank Lee', jobTitle: 'UI/UX Designer', salary: 70000, experience: 4, location: 'London'
     skills: [{ skillId: 's23', skillName: 'Figma', level: 3 }, { skillId: 's26', skillName: 'UX Research', level: 2 }, { skillId: 's27', skillName: 'Design Systems', level: 2 }],
     plannedCapacity: 0, allocatedCapacity: 10, totalCapacity: 40 },
-  { id: 'e7', name: 'Grace Kim', jobTitle: 'Frontend Developer', salary: 72000, experience: 3,
+  { id: 'e7', name: 'Grace Kim', jobTitle: 'Frontend Developer', salary: 72000, experience: 3, location: 'Paris'
     skills: [{ skillId: 's1', skillName: 'React', level: 2 }, { skillId: 's4', skillName: 'Vue.js', level: 3 }, { skillId: 's2', skillName: 'TypeScript', level: 2 }],
     plannedCapacity: 5, allocatedCapacity: 10, totalCapacity: 40 },
-  { id: 'e8', name: 'Henry Patel', jobTitle: 'Senior Backend Engineer', salary: 98000, experience: 9,
+  { id: 'e8', name: 'Henry Patel', jobTitle: 'Senior Backend Engineer', salary: 98000, experience: 9, location: 'Amsterdam'
     skills: [{ skillId: 's8', skillName: 'Java', level: 3 }, { skillId: 's12', skillName: 'PostgreSQL', level: 3 }, { skillId: 's14', skillName: 'Redis', level: 2 }],
     plannedCapacity: 10, allocatedCapacity: 18, totalCapacity: 40 },
-  { id: 'e9', name: 'Irene Zhang', jobTitle: 'Data Engineer', salary: 92000, experience: 7,
+  { id: 'e9', name: 'Irene Zhang', jobTitle: 'Data Engineer', salary: 92000, experience: 7, location: 'Madrid'
     skills: [{ skillId: 's6', skillName: 'Python', level: 3 }, { skillId: 's12', skillName: 'PostgreSQL', level: 2 }, { skillId: 's16', skillName: 'Elasticsearch', level: 3 }],
     plannedCapacity: 8, allocatedCapacity: 14, totalCapacity: 40 },
-  { id: 'e10', name: 'James Brown', jobTitle: 'DevOps Engineer', salary: 88000, experience: 6,
+  { id: 'e10', name: 'James Brown', jobTitle: 'DevOps Engineer', salary: 88000, experience: 6, location: 'Dublin'
     skills: [{ skillId: 's17', skillName: 'Docker', level: 3 }, { skillId: 's21', skillName: 'Terraform', level: 3 }, { skillId: 's22', skillName: 'CI/CD', level: 3 }],
     plannedCapacity: 6, allocatedCapacity: 16, totalCapacity: 40 },
-  { id: 'e11', name: 'Karen Taylor', jobTitle: 'Angular Developer', salary: 78000, experience: 5,
+  { id: 'e11', name: 'Karen Taylor', jobTitle: 'Angular Developer', salary: 78000, experience: 5, location: 'Stockholm'
     skills: [{ skillId: 's3', skillName: 'Angular', level: 3 }, { skillId: 's2', skillName: 'TypeScript', level: 3 }, { skillId: 's11', skillName: '.NET / C#', level: 2 }],
     plannedCapacity: 4, allocatedCapacity: 12, totalCapacity: 40 },
-  { id: 'e12', name: 'Liam O\'Connor', jobTitle: 'Platform Engineer', salary: 96000, experience: 8,
+  { id: 'e12', name: 'Liam O\'Connor', jobTitle: 'Platform Engineer', salary: 96000, experience: 8, location: 'Helsinki'
     skills: [{ skillId: 's18', skillName: 'Kubernetes', level: 3 }, { skillId: 's19', skillName: 'AWS', level: 2 }, { skillId: 's20', skillName: 'Azure', level: 3 }],
     plannedCapacity: 7, allocatedCapacity: 20, totalCapacity: 40 },
-  { id: 'e13', name: 'Maria Gonzalez', jobTitle: 'Product Designer', salary: 75000, experience: 5,
+  { id: 'e13', name: 'Maria Gonzalez', jobTitle: 'Product Designer', salary: 75000, experience: 5, location: 'Munich'
     skills: [{ skillId: 's23', skillName: 'Figma', level: 3 }, { skillId: 's24', skillName: 'Adobe XD', level: 2 }, { skillId: 's27', skillName: 'Design Systems', level: 3 }],
     plannedCapacity: 3, allocatedCapacity: 8, totalCapacity: 40 },
-  { id: 'e14', name: 'Nathan Park', jobTitle: 'Go Developer', salary: 94000, experience: 6,
+  { id: 'e14', name: 'Nathan Park', jobTitle: 'Go Developer', salary: 94000, experience: 6, location: 'Zurich'
     skills: [{ skillId: 's9', skillName: 'Go', level: 3 }, { skillId: 's17', skillName: 'Docker', level: 2 }, { skillId: 's14', skillName: 'Redis', level: 3 }],
     plannedCapacity: 2, allocatedCapacity: 22, totalCapacity: 40 },
-  { id: 'e15', name: 'Olivia White', jobTitle: 'Frontend Lead', salary: 100000, experience: 9,
+  { id: 'e15', name: 'Olivia White', jobTitle: 'Frontend Lead', salary: 100000, experience: 9, location: 'Brussels'
     skills: [{ skillId: 's1', skillName: 'React', level: 3 }, { skillId: 's5', skillName: 'Next.js', level: 3 }, { skillId: 's2', skillName: 'TypeScript', level: 3 }, { skillId: 's27', skillName: 'Design Systems', level: 2 }],
     plannedCapacity: 10, allocatedCapacity: 15, totalCapacity: 40 },
-  { id: 'e16', name: 'Paul Rivera', jobTitle: 'Java Architect', salary: 115000, experience: 14,
+  { id: 'e16', name: 'Paul Rivera', jobTitle: 'Java Architect', salary: 115000, experience: 14, location: 'Lisbon'
     skills: [{ skillId: 's8', skillName: 'Java', level: 3 }, { skillId: 's11', skillName: '.NET / C#', level: 3 }, { skillId: 's12', skillName: 'PostgreSQL', level: 2 }],
     plannedCapacity: 5, allocatedCapacity: 25, totalCapacity: 40 },
-  { id: 'e17', name: 'Quinn Adams', jobTitle: 'QA Engineer', salary: 68000, experience: 4,
+  { id: 'e17', name: 'Quinn Adams', jobTitle: 'QA Engineer', salary: 68000, experience: 4, location: 'Rome'
     skills: [{ skillId: 's6', skillName: 'Python', level: 2 }, { skillId: 's22', skillName: 'CI/CD', level: 2 }, { skillId: 's17', skillName: 'Docker', level: 1 }],
     plannedCapacity: 0, allocatedCapacity: 5, totalCapacity: 40 },
-  { id: 'e18', name: 'Rachel Nguyen', jobTitle: 'Database Administrator', salary: 87000, experience: 7,
+  { id: 'e18', name: 'Rachel Nguyen', jobTitle: 'Database Administrator', salary: 87000, experience: 7, location: 'Copenhagen'
     skills: [{ skillId: 's12', skillName: 'PostgreSQL', level: 3 }, { skillId: 's15', skillName: 'MySQL', level: 3 }, { skillId: 's13', skillName: 'MongoDB', level: 2 }],
     plannedCapacity: 4, allocatedCapacity: 18, totalCapacity: 40 },
-  { id: 'e19', name: 'Samuel Clark', jobTitle: 'Solutions Architect', salary: 120000, experience: 15,
+  { id: 'e19', name: 'Samuel Clark', jobTitle: 'Solutions Architect', salary: 120000, experience: 15, location: 'Oslo'
     skills: [{ skillId: 's19', skillName: 'AWS', level: 3 }, { skillId: 's20', skillName: 'Azure', level: 3 }, { skillId: 's21', skillName: 'Terraform', level: 3 }, { skillId: 's9', skillName: 'Go', level: 2 }],
     plannedCapacity: 8, allocatedCapacity: 20, totalCapacity: 40 },
-  { id: 'e20', name: 'Tina Müller', jobTitle: 'UX Designer', salary: 73000, experience: 4,
+  { id: 'e20', name: 'Tina Müller', jobTitle: 'UX Designer', salary: 73000, experience: 4, location: 'Tallinn'
     skills: [{ skillId: 's23', skillName: 'Figma', level: 2 }, { skillId: 's25', skillName: 'Sketch', level: 3 }, { skillId: 's26', skillName: 'UX Research', level: 3 }],
     plannedCapacity: 0, allocatedCapacity: 12, totalCapacity: 40 },
-  { id: 'e21', name: 'Umar Hassan', jobTitle: 'Full Stack Developer', salary: 82000, experience: 5,
+  { id: 'e21', name: 'Umar Hassan', jobTitle: 'Full Stack Developer', salary: 82000, experience: 5, location: 'Riga'
     skills: [{ skillId: 's1', skillName: 'React', level: 2 }, { skillId: 's7', skillName: 'Node.js', level: 2 }, { skillId: 's13', skillName: 'MongoDB', level: 3 }],
     plannedCapacity: 6, allocatedCapacity: 10, totalCapacity: 40 },
-  { id: 'e22', name: 'Vera Sokolova', jobTitle: 'Python Developer', salary: 84000, experience: 6,
+  { id: 'e22', name: 'Vera Sokolova', jobTitle: 'Python Developer', salary: 84000, experience: 6, location: 'Vilnius'
     skills: [{ skillId: 's6', skillName: 'Python', level: 3 }, { skillId: 's10', skillName: 'GraphQL', level: 3 }, { skillId: 's16', skillName: 'Elasticsearch', level: 2 }],
     plannedCapacity: 3, allocatedCapacity: 14, totalCapacity: 40 },
-  { id: 'e23', name: 'William Chen', jobTitle: 'Site Reliability Engineer', salary: 105000, experience: 10,
+  { id: 'e23', name: 'William Chen', jobTitle: 'Site Reliability Engineer', salary: 105000, experience: 10, location: 'Sofia'
     skills: [{ skillId: 's18', skillName: 'Kubernetes', level: 3 }, { skillId: 's22', skillName: 'CI/CD', level: 3 }, { skillId: 's19', skillName: 'AWS', level: 2 }, { skillId: 's17', skillName: 'Docker', level: 3 }],
     plannedCapacity: 10, allocatedCapacity: 22, totalCapacity: 40 },
-  { id: 'e24', name: 'Xena Dubois', jobTitle: 'Frontend Developer', salary: 71000, experience: 3,
+  { id: 'e24', name: 'Xena Dubois', jobTitle: 'Frontend Developer', salary: 71000, experience: 3, location: 'Bucharest'
     skills: [{ skillId: 's4', skillName: 'Vue.js', level: 2 }, { skillId: 's3', skillName: 'Angular', level: 2 }, { skillId: 's2', skillName: 'TypeScript', level: 2 }],
     plannedCapacity: 0, allocatedCapacity: 6, totalCapacity: 40 },
-  { id: 'e25', name: 'Yuki Tanaka', jobTitle: 'Backend Team Lead', salary: 102000, experience: 11,
+  { id: 'e25', name: 'Yuki Tanaka', jobTitle: 'Backend Team Lead', salary: 102000, experience: 11, location: 'Athens'
     skills: [{ skillId: 's8', skillName: 'Java', level: 3 }, { skillId: 's9', skillName: 'Go', level: 3 }, { skillId: 's12', skillName: 'PostgreSQL', level: 3 }, { skillId: 's14', skillName: 'Redis', level: 2 }],
     plannedCapacity: 8, allocatedCapacity: 20, totalCapacity: 40 },
-  { id: 'e26', name: 'Zara Ivanova', jobTitle: '.NET Developer', salary: 79000, experience: 5,
+  { id: 'e26', name: 'Zara Ivanova', jobTitle: '.NET Developer', salary: 79000, experience: 5, location: 'Zagreb'
     skills: [{ skillId: 's11', skillName: '.NET / C#', level: 3 }, { skillId: 's15', skillName: 'MySQL', level: 2 }, { skillId: 's20', skillName: 'Azure', level: 2 }],
     plannedCapacity: 2, allocatedCapacity: 8, totalCapacity: 40 },
 ];
